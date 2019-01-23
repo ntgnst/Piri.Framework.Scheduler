@@ -20,7 +20,6 @@ namespace Piri.Framework.Scheduler.Quartz
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-
             services.UseQuartz(typeof(SimpleTestProcess));
         }
 
@@ -37,7 +36,7 @@ namespace Piri.Framework.Scheduler.Quartz
                 if (context.Request.Path.Equals("/StartJobs"))
                 {
                     //Business Logic
-                    QuartzServiceUtilities.StartJob<SimpleTestProcess>("0/5 * * * * ?");
+                    QuartzServiceUtilities.StartJob<SimpleTestProcess>("0/5 * * * * ?", true);
                 }
                 
             });

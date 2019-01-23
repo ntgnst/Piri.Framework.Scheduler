@@ -1,9 +1,12 @@
-﻿using Piri.Framework.Scheduler.Quartz.Job;
+﻿using Piri.Framework.Scheduler.Quartz.Domain;
+using Piri.Framework.Scheduler.Quartz.Interface.Result;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Piri.Framework.Scheduler.Quartz.Interface
 {
     public interface IQuartzServiceUtilities
     {
-        void StartJob<TJob>(string timerRegex, bool isStartNow = true) where TJob : IPiriJob;
+        Task<Result<List<QuartzDto>>> GetAllWorkingJobs();
     }
 }
