@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Piri.Framework.Scheduler.Quartz.Extension;
+using Quartz;
 
 namespace Piri.Framework.Scheduler.Quartz
 {
@@ -25,17 +20,28 @@ namespace Piri.Framework.Scheduler.Quartz
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
             services.UseQuartz(typeof(SimpleTestProcess));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.ApplicationServices.GetService<IScheduler>();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            QuartzServiceUtilities.StartJob<SimpleTestProcess>("* 0 0 ? * * *");
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.Equals("/StartJobs"))
+                {
+                    //Business Logic
+                    QuartzServiceUtilities.StartJob<SimpleTestProcess>("0/5 * * * * ?");
+                }
+                
+            });
+
             app.UseMvc();
         }
     }

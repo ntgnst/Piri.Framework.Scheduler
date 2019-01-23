@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Piri.Framework.Scheduler.Quartz.Domain;
 
 namespace Piri.Framework.Scheduler.Quartz.Controllers
 {
@@ -39,6 +40,13 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
+        }
+
+        [HttpPost]
+        public JsonResult CreateCron(string cronRegex)
+        {
+            CronDto cronDto = new CronDto(cronRegex);
+            return Json(cronDto);
         }
     }
 }

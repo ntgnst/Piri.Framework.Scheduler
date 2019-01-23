@@ -1,15 +1,14 @@
-﻿using Piri.Framework.Scheduler.Quartz.Job;
-using Quartz;
+﻿using Quartz;
 using Quartz.Spi;
 using System;
 
 namespace Piri.Framework.Scheduler.Quartz.Extension
 {
-    public class PiriJobFactory : IPiriJobFactory
+    public class QuartzJobFactory : IJobFactory
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public PiriJobFactory(IServiceProvider serviceProvider)
+        public QuartzJobFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }

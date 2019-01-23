@@ -1,19 +1,15 @@
-﻿using Piri.Framework.Scheduler.Quartz.Job;
-using Piri.Framework.Scheduler.Quartz.Scheduler;
-using Quartz;
+﻿using Quartz;
 using Quartz.Impl;
 
 namespace Piri.Framework.Scheduler.Quartz.Extension
 {
-    public class QuartzServiceUtilities
+    public static class QuartzServiceUtilities 
     {
-        public static void StartJob<TJob>(/*ILoggerFactory loggerFactory, IQuartzServiceUtilities quartzServiceUtilities,*/ string timerRegex, bool isStartNow = true)
-               where TJob : IPiriJob
+        public static async void StartJob<TJob>(string timerRegex, bool isStartNow = false)
+               where TJob : IJob
         {
-            //Logger<IJob> logger = new Logger<IJob>(loggerFactory);
-
             IScheduler scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
-            scheduler.Start();
+            await scheduler.Start();
 
             string jobName = typeof(TJob).FullName;
 
@@ -38,9 +34,7 @@ namespace Piri.Framework.Scheduler.Quartz.Extension
                 .Build();
             }
 
-            scheduler.ScheduleJob(job, trigger);
-
-            //logger.LogInformation($"QuartzServicesUtilities.StartJob JobName : {jobName} started. TimerRegex : {timerRegex} IsStartNow : {isStartNow}");
+            await scheduler.ScheduleJob(job, trigger);
         }
     }
 }
