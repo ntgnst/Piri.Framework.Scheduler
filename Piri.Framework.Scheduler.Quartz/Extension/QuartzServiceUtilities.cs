@@ -6,6 +6,7 @@ using Quartz.Impl.Matchers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Piri.Framework.Scheduler.Quartz.Extension
@@ -15,7 +16,8 @@ namespace Piri.Framework.Scheduler.Quartz.Extension
         private static IScheduler _scheduler;
         private static ICronTrigger _cronTrigger;
         private static IJobDetail _job;
-        private static IJobDetail _existingJob;
+        private static TriggerBuilder _triggerBuilder;
+        private static ITrigger _trigger;
         private static string _jobName;
 
         //Creates and starts a job
@@ -48,6 +50,42 @@ namespace Piri.Framework.Scheduler.Quartz.Extension
             }
 
             await _scheduler.ScheduleJob(_job, _cronTrigger);
+        }
+        public static async void TriggerJob<TJob>(string jobName, string cronRegex) where TJob : IJob
+        {
+            _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
+            await _scheduler.Start();
+
+            _job = JobBuilder.Create()
+                .WithIdentity(jobName)
+                .Build();
+
+            _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
+                .WithIdentity($"{_jobName}.trigger")
+                .WithCronSchedule(cronRegex)
+                .Build();
+
+
+            _triggerBuilder = TriggerBuilder.Create();
+
+            _trigger = _triggerBuilder
+                            .ForJob(_job.Key)
+                            .WithCronSchedule(cronRegex)
+                            .WithIdentity(jobName)
+                            .Build();
+
+            await _scheduler.RescheduleJob(_cronTrigger.Key, _trigger);
+        }
+        public static async Task<Result<QuartzDto>> StartAll()
+        {
+            //TODO : Logic Get All Registered Jobs And Fire Them.
+            _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
+            if (!_scheduler.IsStarted)
+            {
+                await _scheduler.Start();
+            }
+            return new Result<QuartzDto>();
+
         }
         //Adds new Job Without starting
         public static async Task<Result<QuartzDto>> AddJob<TJob>(string timerRegex, string description = "") where TJob : IJob
@@ -139,6 +177,40 @@ namespace Piri.Framework.Scheduler.Quartz.Extension
             }
 
             return _job;
+        }
+        public static async Task<Result<string>> PauseAllJobs()
+        {
+            Result<string> result;
+
+            try
+            {
+                _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
+                await _scheduler.PauseAll();
+                result = new Result<string>(true, "All jobs successfully paused.");
+            }
+            catch (Exception ex)
+            {
+                result = new Result<string>(true, $"Pausing all jobs failed. Ex : {ex.ToString()}");
+            }
+
+            return result;
+        }
+        public static async Task<Result<string>> ResumeAllJobs()
+        {
+            Result<string> result;
+
+            try
+            {
+                _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
+                await _scheduler.ResumeAll();
+                result = new Result<string>(true, "All jobs successfully resumed.");
+            }
+            catch (Exception ex)
+            {
+                result = new Result<string>(true, $"Resuming all jobs failed. Ex : {ex.ToString()}");
+            }
+
+            return result;
         }
     }
 }

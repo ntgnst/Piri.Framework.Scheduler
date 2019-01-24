@@ -31,6 +31,7 @@ namespace Piri.Framework.Scheduler.Quartz
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseMvc().UseMvcWithDefaultRoute();
             app.Use(async (context, next) =>
             {
                 if (context.Request.Path.Equals("/StartJobs"))
