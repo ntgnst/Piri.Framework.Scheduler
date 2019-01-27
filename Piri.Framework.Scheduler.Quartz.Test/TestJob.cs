@@ -1,17 +1,15 @@
-﻿using Piri.Framework.Scheduler.Quartz.Interface;
+﻿using Piri.Framework.Scheduler.Quartz.Extension;
 using Quartz;
 using System;
 using System.Threading.Tasks;
 
 namespace Piri.Framework.Scheduler.Quartz.Test
 {
-    public class TestJob : IPiriQuartzJob
+    public class TestJob : PiriJob
     {
-        public Task Execute(IJobExecutionContext context)
+        public override async Task StartAsync(IJobExecutionContext context)
         {
-            //Logic
-            Console.WriteLine("Just Throttling...");
-            return Task.FromResult(0);
+            await Console.Out.WriteLineAsync("Just Throttling...");
         }
     }
 }

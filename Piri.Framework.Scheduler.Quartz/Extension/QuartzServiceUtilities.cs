@@ -21,35 +21,46 @@ namespace Piri.Framework.Scheduler.Quartz.Extension
         private static string _jobName;
 
         //Creates and starts a job
-        public static async void StartJob<TJob>(string timerRegex, bool isStartNow = false)
+        public static async Task<Result<QuartzDto>> StartJob<TJob>(string timerRegex, bool isStartNow = false)
                where TJob : IJob
         {
-            _scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
-            await _scheduler.Start();
-
-            _jobName = typeof(TJob).FullName;
-
-            _job = JobBuilder.Create<TJob>()
-                .WithIdentity(_jobName)
-                .Build();
-
-            if (isStartNow)
+            Result<QuartzDto> result;
+            try
             {
-                _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
-                .WithIdentity($"{_jobName}.trigger")
-                .StartNow()
-                .WithCronSchedule(timerRegex)
-                .Build();
-            }
-            else
-            {
-                _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
-                .WithIdentity($"{_jobName}.trigger")
-                .WithCronSchedule(timerRegex)
-                .Build();
-            }
+                _scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
+                await _scheduler.Start();
 
-            await _scheduler.ScheduleJob(_job, _cronTrigger);
+                _jobName = typeof(TJob).FullName;
+
+                _job = JobBuilder.Create<TJob>()
+                    .WithIdentity(_jobName)
+                    .Build();
+
+                //_cronTrigger = FireOrAddTrigger();
+                if (isStartNow)
+                {
+                    _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
+                    .WithIdentity($"{_jobName}.trigger")
+                    .StartNow()
+                    .WithCronSchedule(timerRegex)
+                    .Build();
+                }
+                else
+                {
+                    _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
+                    .WithIdentity($"{_jobName}.trigger")
+                    .WithCronSchedule(timerRegex)
+                    .Build();
+                }
+
+                await _scheduler.ScheduleJob(_job, _cronTrigger);
+                result = new Result<QuartzDto>(new QuartzDto() { Name = _job?.Key.ToString(), Description = _job?.Description, JobKeyName = _job.Key.ToString(), IsActive = true, IsRunning = true });
+            }
+            catch (Exception ex)
+            {
+                result = new Result<QuartzDto>(ResultTypeEnum.Error, null, $"An error occured while creating and starting job. Ex : {ex.ToString()}");
+            }
+            return result;
         }
         public static async void TriggerJob<TJob>(string jobName, string cronRegex) where TJob : IJob
         {
@@ -109,7 +120,7 @@ namespace Piri.Framework.Scheduler.Quartz.Extension
                                     .WithCronSchedule(timerRegex)
                                     .Build();
 
-                    await _scheduler.ScheduleJob(_job, _cronTrigger);
+                    await _scheduler.AddJob(_job, false, true);
                     result = new Result<QuartzDto>(new QuartzDto() { Name = _job?.Key.ToString(), Description = _job?.Description, JobKeyName = _job.Key.ToString() });
                 }
             }
@@ -120,28 +131,74 @@ namespace Piri.Framework.Scheduler.Quartz.Extension
 
             return result;
         }
+        public static async Task<Result<List<QuartzDto>>> StartAllJobs()
+        {
+            Result<List<QuartzDto>> result;
+            List<QuartzDto> resultList = new List<QuartzDto>();
+            try
+            {
+                _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
+                await _scheduler.Start();
+                List<ITrigger> triggerList = new List<ITrigger>();
+
+                IReadOnlyCollection<string> jobGroupList = await _scheduler.GetJobGroupNames();
+                foreach (string jobGroup in jobGroupList)
+                {
+                    GroupMatcher<JobKey> groupMatcher = GroupMatcher<JobKey>.GroupContains(jobGroup);
+                    IReadOnlyCollection<JobKey> jobkeyList = await _scheduler.GetJobKeys(groupMatcher);
+
+                    foreach (var jobKey in jobkeyList)
+                    {
+                        IJobDetail detail = await _scheduler.GetJobDetail(jobKey);
+                        IReadOnlyCollection<ITrigger> jobsTriggerList = await _scheduler.GetTriggersOfJob(jobKey);
+
+                        foreach (ITrigger jobsTrigger in jobsTriggerList)
+                        {
+                            resultList.Add(new QuartzDto()
+                            {
+                                Group = jobGroup,
+                                JobKeyGroup = jobKey.Group,
+                                Name = jobKey.Name,
+                                JobKeyName = jobKey.Name,
+                                NextFireTime = jobsTrigger.GetNextFireTimeUtc().HasValue ? jobsTrigger.GetNextFireTimeUtc().Value.LocalDateTime.ToString() : "No Information",
+                                PreviousFireTime = jobsTrigger.GetPreviousFireTimeUtc().HasValue ? jobsTrigger.GetPreviousFireTimeUtc().Value.ToString() : "No Information"
+                            });
+                        }
+
+                        await _scheduler.ScheduleJob(jobsTriggerList?.FirstOrDefault());
+                    }
+                }
+                result = new Result<List<QuartzDto>>(ResultTypeEnum.Success, resultList, "Jobs successfully started.");
+            }
+            catch (Exception ex)
+            {
+                result = new Result<List<QuartzDto>>(false, $"An error occured while starting all jobs. Ex : {ex.ToString()}");
+            }
+
+            return result;
+        }
         public static async Task<Result<List<QuartzDto>>> GetAllWorkingJobs()
         {
             Result<List<QuartzDto>> result;
             List<QuartzDto> modelList = new List<QuartzDto>();
             try
             {
-                IScheduler scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
-                IReadOnlyCollection<string> jobGroups = await scheduler.GetJobGroupNames();
-                foreach (string group in jobGroups)
+                _scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
+                IReadOnlyCollection<string> jobGroupList = await _scheduler.GetJobGroupNames();
+                foreach (string jobGroup in jobGroupList)
                 {
-                    GroupMatcher<JobKey> groupMatcher = GroupMatcher<JobKey>.GroupContains(group);
-                    IReadOnlyCollection<JobKey> jobKeys = await scheduler.GetJobKeys(groupMatcher);
+                    GroupMatcher<JobKey> groupMatcher = GroupMatcher<JobKey>.GroupContains(jobGroup);
+                    IReadOnlyCollection<JobKey> jobKeys = await _scheduler.GetJobKeys(groupMatcher);
                     foreach (var jobKey in jobKeys)
                     {
-                        IJobDetail detail = await scheduler.GetJobDetail(jobKey);
-                        IReadOnlyCollection<ITrigger> triggers = await scheduler.GetTriggersOfJob(jobKey);
+                        IJobDetail detail = await _scheduler.GetJobDetail(jobKey);
+                        IReadOnlyCollection<ITrigger> triggers = await _scheduler.GetTriggersOfJob(jobKey);
                         foreach (ITrigger trigger in triggers)
                         {
 
                             modelList.Add(new QuartzDto()
                             {
-                                Group = group,
+                                Group = jobGroup,
                                 JobKeyName = jobKey.Name,
                                 Description = detail.Description,
                                 Name = trigger.Key.Name,
@@ -212,5 +269,7 @@ namespace Piri.Framework.Scheduler.Quartz.Extension
 
             return result;
         }
+        //delete
+
     }
 }

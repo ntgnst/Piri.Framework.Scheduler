@@ -1,17 +1,15 @@
-﻿using Piri.Framework.Scheduler.Quartz.Interface;
+﻿using Piri.Framework.Scheduler.Quartz.Extension;
 using Quartz;
 using System;
 using System.Threading.Tasks;
 
 namespace Piri.Framework.Scheduler.Quartz
 {
-    public class SimpleTestProcess : IPiriQuartzJob
+    public class SimpleTestProcess : PiriJob
     {
-        public Task Execute(IJobExecutionContext context)
+        public override async Task StartAsync(IJobExecutionContext context)
         {
-            //Logic
-            Console.WriteLine("I am runnin'. Rollin' , Rollin' , Rollin' , Rollin', Rollin'");
-            return Task.FromResult(0);
+            await Console.Out.WriteLineAsync("Just Worked !");
         }
     }
 }

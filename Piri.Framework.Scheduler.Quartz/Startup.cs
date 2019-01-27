@@ -2,8 +2,14 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Piri.Framework.Scheduler.Quartz.Domain;
 using Piri.Framework.Scheduler.Quartz.Extension;
+using Piri.Framework.Scheduler.Quartz.Interface;
+using Piri.Framework.Scheduler.Quartz.Interface.Result;
+using Piri.Framework.Scheduler.Quartz.Model;
 using Quartz;
+using System;
+using System.Collections.Generic;
 
 namespace Piri.Framework.Scheduler.Quartz
 {
@@ -20,6 +26,7 @@ namespace Piri.Framework.Scheduler.Quartz
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddDbContext<QuartzDataContext>(ServiceLifetime.Singleton);
             services.UseQuartz(typeof(SimpleTestProcess));
         }
 
@@ -32,16 +39,8 @@ namespace Piri.Framework.Scheduler.Quartz
                 app.UseDeveloperExceptionPage();
             }
             app.UseMvc().UseMvcWithDefaultRoute();
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path.Equals("/StartJobs"))
-                {
-                    //Business Logic
-                    QuartzServiceUtilities.StartJob<SimpleTestProcess>("0/5 * * * * ?", true);
-                }
-                
-            });
-
+            Result<QuartzDto> result = QuartzServiceUtilities.StartJob<SimpleTestProcess>("0/1 * * * * ?", true).GetAwaiter().GetResult();
+            
             app.UseMvc();
         }
     }

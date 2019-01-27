@@ -10,6 +10,12 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
     [Route("api/quartz")]
     public class QuartzController : Controller
     {
+        [Route("AddJob")]
+        public async Task<JsonResult> AddJob()
+        {
+            Result<QuartzDto> result = await QuartzServiceUtilities.AddJob<SimpleTestProcess>("0/5 * * * * ?", "A simple job");
+            return Json(result);
+        }
         [Route("GetList")]
         public async Task<JsonResult> GetList()
         {
@@ -19,7 +25,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
         [Route("StartAllJobs")]
         public async Task<JsonResult> StartAllJobs()
         {
-            Result<QuartzDto> result = await QuartzServiceUtilities.StartAll();
+            Result<List<QuartzDto>> result = await QuartzServiceUtilities.StartAllJobs();
             return Json(result);
         }
 

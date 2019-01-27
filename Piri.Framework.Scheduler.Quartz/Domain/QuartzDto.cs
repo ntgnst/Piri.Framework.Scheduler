@@ -9,5 +9,7 @@
         public string Name { get; set; }
         public string NextFireTime { get; set; }
         public string PreviousFireTime { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsRunning { get; set; }
     }
 }
