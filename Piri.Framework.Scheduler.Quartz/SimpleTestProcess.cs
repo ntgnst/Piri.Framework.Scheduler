@@ -13,8 +13,8 @@ namespace Piri.Framework.Scheduler.Quartz
     {
         private readonly IJobService _jobService;
         private readonly IHttpHelper _httpHelper;
-        Result<JobDto> _result;
-        JobDataDto _jobDataDto;
+        private Result<JobDto> _result;
+        private JobDataDto _jobDataDto;
         public SimpleTestProcess(IJobService jobService, IHttpHelper httpHelper)
         {
             _jobService = jobService;

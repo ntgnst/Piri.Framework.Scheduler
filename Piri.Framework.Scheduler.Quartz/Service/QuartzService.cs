@@ -1,5 +1,4 @@
 ﻿using Piri.Framework.Scheduler.Quartz.Domain;
-using Piri.Framework.Scheduler.Quartz.Extension;
 using Piri.Framework.Scheduler.Quartz.Interface;
 using Piri.Framework.Scheduler.Quartz.Interface.Result;
 using Quartz;
@@ -42,7 +41,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                     .Build();
                 _cronTrigger = GenerateCronTrigger(jobDto, isStartNow, _jobName);
                 _dateTimeOffset = await _scheduler.ScheduleJob(_job, _cronTrigger);
-                result = new Result<QuartzDto>(new QuartzDto() { Name = _jobName, Description = _job?.Description, JobKeyName = _job.Key.ToString(), IsActive = true, IsRunning = true, PreviousFireTime = _dateTimeOffset.UtcDateTime.ToString() });
+                result = new Result<QuartzDto>(new QuartzDto() { Name = _jobName, Description = _job?.Description, JobKeyName = _job.Key.ToString(), IsActive = true, IsRunning = true, PreviousFireTime = _dateTimeOffset.LocalDateTime.ToString() });
             }
             catch (Exception ex)
             {
@@ -50,7 +49,6 @@ namespace Piri.Framework.Scheduler.Quartz.Service
             }
             return result;
         }
-
         private ICronTrigger GenerateCronTrigger(JobDto jobDto, bool isStartNow, string jobName)
         {
             if (isStartNow)
@@ -70,7 +68,6 @@ namespace Piri.Framework.Scheduler.Quartz.Service
             }
             return _cronTrigger;
         }
-
         public async Task<Result<JobDto>> TriggerJob<TJob>(JobDto jobDto) where TJob : IJob
         {
             Result<JobDto> result;
