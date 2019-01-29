@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Piri.Framework.Scheduler.Quartz.Model
+namespace Piri.Framework.Scheduler.Quartz.Domain
 {
-    public partial class Job
+    public class JobDto
     {
-        public Job()
+        public JobDto()
         {
-            JobData = new HashSet<JobData>();
+            JobDataDtoList = new List<JobDataDto>();
         }
 
         public int Id { get; set; }
@@ -17,6 +17,6 @@ namespace Piri.Framework.Scheduler.Quartz.Model
         public bool IsActive { get; set; }
         public bool IsRunning { get; set; }
 
-        public virtual ICollection<JobData> JobData { get; set; }
+        public List<JobDataDto> JobDataDtoList { get; set; }
     }
 }

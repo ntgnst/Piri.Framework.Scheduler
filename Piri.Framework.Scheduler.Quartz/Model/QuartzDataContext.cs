@@ -22,6 +22,7 @@ namespace Piri.Framework.Scheduler.Quartz.Model
         {
             if (!optionsBuilder.IsConfigured)
             {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
                 optionsBuilder.UseSqlServer("Server=.;Database=SCH_Quartz;User Id=yenisafak;Password=yenisafak5*;");
             }
         }
@@ -41,8 +42,6 @@ namespace Piri.Framework.Scheduler.Quartz.Model
 
             modelBuilder.Entity<JobData>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
-
                 entity.Property(e => e.Method).HasMaxLength(10);
 
                 entity.Property(e => e.Name)
