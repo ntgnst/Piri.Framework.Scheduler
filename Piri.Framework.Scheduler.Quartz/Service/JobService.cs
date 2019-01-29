@@ -13,6 +13,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
 {
     public class JobService : IJobService
     {
+        private string _convertedName;
         private readonly QuartzDataContext _context;
         public JobService(QuartzDataContext context)
         {
@@ -129,14 +130,13 @@ namespace Piri.Framework.Scheduler.Quartz.Service
         }
         public async Task<Result<JobDto>> GetJobByName(string jobName)
         {
-            string convertedName = jobName.Substring(0, 86);
+            _convertedName = jobName.Substring(0, 86);
             Result<JobDto> result;
             try
             {
                 //using (QuartzDataContext _context = new QuartzDataContext())
                 //{
-
-                Job job = await _context.Job.Include(i => i.JobData).Where(w => w.JobData.FirstOrDefault().Name.Equals(convertedName)).FirstOrDefaultAsync();
+                Job job = await _context.Job.Include(i => i.JobData).Where(w => w.JobData.FirstOrDefault().Name.Equals(_convertedName)).FirstOrDefaultAsync();
                 result = new Result<JobDto>(Mapper.Map<Job, JobDto>(job));
                 //}
             }
