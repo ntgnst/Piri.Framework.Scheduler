@@ -41,12 +41,6 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
         public void Delete(int id)
         {
         }
-
-        [HttpPost]
-        public JsonResult CreateCron(string cronRegex)
-        {
-            CronDto cronDto = new CronDto(cronRegex);
-            return Json(cronDto);
-        }
+        
     }
 }

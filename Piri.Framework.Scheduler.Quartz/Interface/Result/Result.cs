@@ -3,7 +3,6 @@
     public class Result<T> : IResult<T>
     {
         public bool IsSuccess { get; set; }
-
         public ResultTypeEnum ResultType { get; set; }
         public string Html { get; set; }
         public string Message { get; set; }

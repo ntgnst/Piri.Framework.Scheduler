@@ -21,6 +21,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
         private TriggerBuilder _triggerBuilder;
         private ITrigger _trigger;
         private string _jobName;
+        private DateTimeOffset _dateTimeOffset;
         public QuartzService(IJobService jobService)
         {
             _jobService = jobService;
@@ -57,8 +58,8 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                     .Build();
                 }
 
-                await _scheduler.ScheduleJob(_job, _cronTrigger);
-                result = new Result<QuartzDto>(new QuartzDto() { Name = _jobName, Description = _job?.Description, JobKeyName = _job.Key.ToString(), IsActive = true, IsRunning = true });
+                _dateTimeOffset = await _scheduler.ScheduleJob(_job, _cronTrigger);
+                result = new Result<QuartzDto>(new QuartzDto() { Name = _jobName, Description = _job?.Description, JobKeyName = _job.Key.ToString(), IsActive = true, IsRunning = true, PreviousFireTime = _dateTimeOffset.UtcDateTime.ToString() });
             }
             catch (Exception ex)
             {
@@ -93,7 +94,8 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                                 .WithIdentity($"{_jobName}.{jobDto.Guid}")
                                 .Build();
 
-                await _scheduler.ScheduleJob(_job, _cronTrigger);
+                _dateTimeOffset = await _scheduler.ScheduleJob(_job, _cronTrigger);
+                jobDto.LastRunTime = _dateTimeOffset.UtcDateTime;
                 result = new Result<JobDto>(jobDto);
             }
             catch (Exception ex)
@@ -240,8 +242,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
             List<Result<JobDto>> innerResultList = new List<Result<JobDto>>();
             try
             {
-                IJobService jobService = new JobService();
-                List<JobDto> jobList = jobService.GetAllJobs().Data.Where(w => w.IsActive).ToList();
+                List<JobDto> jobList = _jobService.GetAllJobs().Data.Where(w => w.IsActive).ToList();
                 if (jobList.Any())
                 {
                     _scheduler = await StdSchedulerFactory.GetDefaultScheduler();

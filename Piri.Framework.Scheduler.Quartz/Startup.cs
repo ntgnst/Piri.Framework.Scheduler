@@ -2,11 +2,9 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Piri.Framework.Scheduler.Quartz.Domain;
 using Piri.Framework.Scheduler.Quartz.Extension;
 using Piri.Framework.Scheduler.Quartz.Helper;
 using Piri.Framework.Scheduler.Quartz.Interface;
-using Piri.Framework.Scheduler.Quartz.Interface.Result;
 using Piri.Framework.Scheduler.Quartz.Model;
 using Piri.Framework.Scheduler.Quartz.Service;
 using Quartz;
@@ -47,6 +45,8 @@ namespace Piri.Framework.Scheduler.Quartz
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.ApplicationServices.GetService<IScheduler>();
+            IScheduleJob scheduler = app.ApplicationServices.GetService<IScheduleJob>();
+            scheduler.InitializeAllJobs();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
