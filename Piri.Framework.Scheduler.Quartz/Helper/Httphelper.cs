@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Piri.Framework.Scheduler.Quartz.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Piri.Framework.Scheduler.Quartz.Helper
 {
-    public class HttpHelperService
+    public class HttpHelper : IHttpHelper
     {
         public async Task<string> Get(string url, List<KeyValuePair<string, string>> headerList, string body)
         {
@@ -16,7 +17,7 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
             {
                 try
                 {
-                    if (headerList.Any())
+                    if (headerList!=null)
                     {
                         foreach (KeyValuePair<string, string> item in headerList)
                         {
@@ -25,6 +26,7 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
                     }
                     HttpResponseMessage response = await client.GetAsync(new Uri(url));
                     responseBody = await response.Content.ReadAsStringAsync();
+                    await Console.Out.WriteLineAsync($"Replied from --> {url} \n  Response --> {responseBody}");
                 }
                 catch (Exception ex)
                 {
@@ -80,6 +82,24 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
                     }
                 }
                 HttpResponseMessage response = await client.PostAsync(methodName, new StringContent(JsonConvert.SerializeObject(model)));
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                return responseBody;
+            }
+        }
+        public async Task<string> PostAsync(string url, List<KeyValuePair<string, string>> headerList, string json)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                if (headerList.Any())
+                {
+                    foreach (KeyValuePair<string, string> item in headerList)
+                    {
+                        client.DefaultRequestHeaders.Add(item.Key, item.Value);
+                    }
+                }
+
+                HttpResponseMessage response = await client.PostAsync(url, new StringContent(json));
                 string responseBody = await response.Content.ReadAsStringAsync();
 
                 return responseBody;

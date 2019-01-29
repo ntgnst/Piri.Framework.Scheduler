@@ -18,7 +18,7 @@ namespace Piri.Framework.Scheduler.Quartz
 
         public Startup(IConfiguration configuration, IHostingEnvironment environment)
         {
-            
+
             IConfigurationBuilder builder = new ConfigurationBuilder()
                 .SetBasePath(environment.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -35,6 +35,7 @@ namespace Piri.Framework.Scheduler.Quartz
             services.AddMvc();
             MapperInitializer.MapperConfiguration();
             services.AddDbContext<QuartzDataContext>(ServiceLifetime.Singleton);
+            services.AddSingleton<IHttpHelper, HttpHelper>();
             services.AddTransient<IJobService, JobService>();
             services.AddTransient<IScheduleJob, QuartzService>();
 
@@ -53,7 +54,7 @@ namespace Piri.Framework.Scheduler.Quartz
             }
             app.UseMvc().UseMvcWithDefaultRoute();
             //Result<QuartzDto> result = Extension.QuartzServiceUtilities.StartJob<SimpleTestProcess>("0/1 * * * * ?", true).GetAwaiter().GetResult();
-            
+
             app.UseMvc();
         }
     }

@@ -12,6 +12,6 @@ namespace Piri.Framework.Scheduler.Quartz.Extension
             return Task.FromResult(0);
         }
         public abstract Task StartAsync(IJobExecutionContext context);
-        
+
     }
 }

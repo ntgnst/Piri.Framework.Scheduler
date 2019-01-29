@@ -40,24 +40,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                 _job = JobBuilder.Create<TJob>()
                     .WithIdentity($"{_jobName}.{jobDto.Guid}")
                     .Build();
-
-                //_cronTrigger = FireOrAddTrigger();
-                if (isStartNow)
-                {
-                    _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
-                    .WithIdentity($"{_jobName}.{jobDto.Guid}.trigger")
-                    .StartNow()
-                    .WithCronSchedule(jobDto.JobDataDtoList.FirstOrDefault().TimerRegex)
-                    .Build();
-                }
-                else
-                {
-                    _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
-                    .WithIdentity($"{_jobName}.{jobDto.Guid}.trigger")
-                    .WithCronSchedule(jobDto.JobDataDtoList.FirstOrDefault().TimerRegex)
-                    .Build();
-                }
-
+                _cronTrigger = GenerateCronTrigger(jobDto, isStartNow, _jobName);
                 _dateTimeOffset = await _scheduler.ScheduleJob(_job, _cronTrigger);
                 result = new Result<QuartzDto>(new QuartzDto() { Name = _jobName, Description = _job?.Description, JobKeyName = _job.Key.ToString(), IsActive = true, IsRunning = true, PreviousFireTime = _dateTimeOffset.UtcDateTime.ToString() });
             }
@@ -67,6 +50,27 @@ namespace Piri.Framework.Scheduler.Quartz.Service
             }
             return result;
         }
+
+        private ICronTrigger GenerateCronTrigger(JobDto jobDto, bool isStartNow, string jobName)
+        {
+            if (isStartNow)
+            {
+                _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
+                .WithIdentity($"{jobName}.{jobDto.Guid}.trigger")
+                .StartNow()
+                .WithCronSchedule(jobDto.JobDataDtoList.FirstOrDefault().TimerRegex)
+                .Build();
+            }
+            else
+            {
+                _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
+                .WithIdentity($"{jobName}.{jobDto.Guid}.trigger")
+                .WithCronSchedule(jobDto.JobDataDtoList.FirstOrDefault().TimerRegex)
+                .Build();
+            }
+            return _cronTrigger;
+        }
+
         public async Task<Result<JobDto>> TriggerJob<TJob>(JobDto jobDto) where TJob : IJob
         {
             Result<JobDto> result;
@@ -80,12 +84,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                     .StoreDurably(true)
                     .Build();
 
-                _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
-                    .WithIdentity($"{_jobName}.{jobDto.Guid}.trigger")
-                    .WithCronSchedule(jobDto.JobDataDtoList.FirstOrDefault().TimerRegex)
-                    .Build();
-
-
+                _cronTrigger = GenerateCronTrigger(jobDto, false, _jobName);
                 _triggerBuilder = TriggerBuilder.Create();
 
                 _trigger = _triggerBuilder
@@ -115,7 +114,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                     _scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
                     await _scheduler.Start();
                     _jobName = jobDto.JobDataDtoList.FirstOrDefault().Name;
-                    _job = CreateJobDetail<TJob>(description);
+                    _job = CreateJobDetail<TJob>(jobDto, description);
 
                     if (await _scheduler.CheckExists(_job.Key))
                     {
@@ -123,10 +122,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                     }
                     else
                     {
-                        _cronTrigger = (ICronTrigger)TriggerBuilder.Create()
-                                        .WithIdentity($"{_jobName}.{jobDto.Guid}.trigger")
-                                        .WithCronSchedule(jobDto.JobDataDtoList.FirstOrDefault().TimerRegex)
-                                        .Build();
+                        _cronTrigger = GenerateCronTrigger(jobDto, false, _jobName);
 
                         await _scheduler.AddJob(_job, false, true);
                         result = new Result<QuartzDto>(new QuartzDto() { Name = _job?.Key.ToString(), Description = _job?.Description, JobKeyName = _job.Key.ToString() });
@@ -184,18 +180,18 @@ namespace Piri.Framework.Scheduler.Quartz.Service
 
             return result;
         }
-        private IJobDetail CreateJobDetail<TJob>(string description = "") where TJob : IJob
+        private IJobDetail CreateJobDetail<TJob>(JobDto jobDto, string description = "") where TJob : IJob
         {
             if (description.Equals(""))
             {
                 _job = JobBuilder.Create<TJob>()
-                                .WithIdentity(_jobName)
+                                .WithIdentity($"{_jobName}.{jobDto.Guid}")
                                 .Build();
             }
             else
             {
                 _job = JobBuilder.Create<TJob>()
-                                .WithIdentity(_jobName)
+                                .WithIdentity($"{_jobName}.{jobDto.Guid}")
                                 .WithDescription(description)
                                 .Build();
             }
@@ -242,11 +238,10 @@ namespace Piri.Framework.Scheduler.Quartz.Service
             List<Result<JobDto>> innerResultList = new List<Result<JobDto>>();
             try
             {
-                List<JobDto> jobList = _jobService.GetAllJobs().Data.Where(w => w.IsActive).ToList();
+                Result<List<JobDto>> jobResultList = await _jobService.GetAllJobs();
+                List<JobDto> jobList = jobResultList.Data.Where(w=> !w.IsRunning).ToList();
                 if (jobList.Any())
                 {
-                    _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
-                    await _scheduler.Start();
                     foreach (JobDto job in jobList)
                     {
                         innerResultList.Add(await TriggerJob<SimpleTestProcess>(job));

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Piri.Framework.Scheduler.Quartz.Domain;
-using Piri.Framework.Scheduler.Quartz.Extension;
 using Piri.Framework.Scheduler.Quartz.Interface;
 using Piri.Framework.Scheduler.Quartz.Interface.Result;
 using System;
@@ -22,10 +21,12 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
             _scheduleJob = scheduleJob;
         }
         [Route("AddJob")]
-        public async Task<JsonResult> AddJob()
+        [HttpPost]
+        public async Task<JsonResult> AddJob([FromBody]JobDataDto jobDataDto)
         {
             Guid guid = Guid.NewGuid();
             string jobName = $"{typeof(SimpleTestProcess).FullName}-{guid}";
+            jobDataDto.Name = jobName;
             JobDto jobDto = new JobDto()
             {
                 Guid = guid,
@@ -33,18 +34,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                 IsRunning = false,
                 JobDataDtoList = new List<JobDataDto>()
                 {
-                    new JobDataDto()
-                    {
-                        Header = "testo",
-                        IsRetry = true,
-                        Body = "awdawd",
-                        Method = "POST",
-                        Name = jobName,
-                        RetryCount = 10,
-                        RetryInterval = 2,
-                        TimerRegex = "0/5 * * * * ?",
-                        Url = "https://www.google.com.tr"
-                    }
+                    jobDataDto
                 },
                 LastEndTime = null,
                 LastRunTime = null,
@@ -52,7 +42,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
             Result<QuartzDto> result = await _scheduleJob.AddJob<SimpleTestProcess>(jobDto, "A simple job");
             if (result.IsSuccess)
             {
-                _jobService.AddJob(jobDto);
+                await _jobService.AddJob(jobDto);
             }
 
             return Json(result);
@@ -63,7 +53,6 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
             Result<List<QuartzDto>> result = await _scheduleJob.GetAllWorkingJobs();
             return Json(result);
         }
-
         [HttpGet]
         [Route("PauseAll")]
         public async Task<JsonResult> PauseAll()
@@ -71,7 +60,6 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
             Result<string> result = await _scheduleJob.PauseAllJobs();
             return Json(result);
         }
-
         [HttpGet]
         [Route("ResumeAll")]
         public async Task<JsonResult> ResumeAll()
@@ -79,7 +67,6 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
             Result<string> result = await _scheduleJob.ResumeAllJobs();
             return Json(result);
         }
-
         [HttpGet]
         [Route("InitializeAllJobs")]
         public async Task<JsonResult> InitializeAllJobs()
@@ -97,6 +84,13 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                 });
             }
             return Json(result);
+        }
+
+        [HttpGet]
+        [Route("InitializeJob")]
+        public async Task<JsonResult> InitializeJob()
+        {
+            return Json("");
         }
     }
 }

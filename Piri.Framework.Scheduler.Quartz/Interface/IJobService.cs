@@ -1,15 +1,17 @@
 ﻿using Piri.Framework.Scheduler.Quartz.Domain;
 using Piri.Framework.Scheduler.Quartz.Interface.Result;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Piri.Framework.Scheduler.Quartz.Interface
 {
     public interface IJobService
     {
-        Result<List<JobDto>> GetAllJobs();
-        Result<JobDto> GetJobById(int jobId);
-        Result<bool> DeleteJob(int jobId);
-        Result<JobDto> UpdateJob(JobDto jobDto);
-        Result<JobDto> AddJob(JobDto jobDto);
+        Task<Result<List<JobDto>>> GetAllJobs();
+        Task<Result<JobDto>> GetJobById(int jobId);
+        Task<Result<bool>> DeleteJob(int jobId);
+        Task<Result<JobDto>> UpdateJob(JobDto jobDto);
+        Task<Result<JobDto>> AddJob(JobDto jobDto);
+        Task<Result<JobDto>> GetJobByName(string jobName);
     }
 }
