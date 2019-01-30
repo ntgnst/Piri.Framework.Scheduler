@@ -40,7 +40,7 @@ namespace Piri.Framework.Scheduler.Quartz
             //services.AddDbContext<QuartzDataContext>(ServiceLifetime.Singleton);
             services.AddDbContext<QuartzDataContext>(options =>
             {
-                options.UseSqlServer("Server=albilsql01;Database=DB_Scheduler;User Id=pirischeduler;Password=pirischeduler5*", opt =>
+                options.UseSqlServer("Server=10.0.130.5;Database=DB_Scheduler;User Id=pirischeduler;Password=pirischeduler5*", opt =>
                 {
                     opt.EnableRetryOnFailure();
                     opt.CommandTimeout(3000);
