@@ -25,7 +25,6 @@ namespace Piri.Framework.Scheduler.Quartz.Service
         {
             _jobService = jobService;
         }
-        //Creates and starts a job
         public async Task<Result<QuartzDto>> StartJob<TJob>(JobDto jobDto, bool isStartNow = false) where TJob : IJob
         {
             Result<QuartzDto> result;
@@ -100,8 +99,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
             }
             return result;
         }
-        //Adds new job Without starting
-        public async Task<Result<QuartzDto>> AddJob<TJob>(JobDto jobDto, string description = "") where TJob : IJob
+        public async Task<Result<QuartzDto>> AddJob<TJob>(JobDto jobDto, string description = "",bool isStartNow = false) where TJob : IJob
         {
             Result<QuartzDto> result;
             try
@@ -119,10 +117,18 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                     }
                     else
                     {
-                        _cronTrigger = GenerateCronTrigger(jobDto, false, _jobName);
+                        _cronTrigger = GenerateCronTrigger(jobDto, isStartNow, _jobName);
 
-                        await _scheduler.AddJob(_job, false, true);
-                        result = new Result<QuartzDto>(new QuartzDto() { Name = _job?.Key.ToString(), Description = _job?.Description, JobKeyName = _job.Key.ToString() });
+                        if (isStartNow)
+                        {
+                            _dateTimeOffset = await _scheduler.ScheduleJob(_job, _cronTrigger);
+                        }
+                        else
+                        {
+                            await _scheduler.AddJob(_job, false, true);
+                        }
+                        
+                        result = new Result<QuartzDto>(new QuartzDto() { Name = _job?.Key.ToString(), Description = _job?.Description, JobKeyName = _job.Key.ToString(), PreviousFireTime = _dateTimeOffset.LocalDateTime.ToString() });
                     }
                 }
                 else

@@ -26,10 +26,15 @@ namespace Piri.Framework.Scheduler.Quartz.Service
         {
             try
             {
-                _job = Mapper.Map<JobDto, Job>(jobDto);
-                await _context.Job.AddAsync(_job);
-                await _context.SaveChangesAsync();
-                _result = new Result<JobDto>(Mapper.Map<Job, JobDto>(_job));
+                using (QuartzDataContext _context = new QuartzDataContext())
+                {
+                    _job = Mapper.Map<JobDto, Job>(jobDto);
+                    await _context.Job.AddAsync(_job);
+                    await _context.SaveChangesAsync();
+                    _result = new Result<JobDto>(Mapper.Map<Job, JobDto>(_job));
+                    _context.Dispose();
+                }
+                    
             }
             catch (Exception ex)
             {
@@ -43,11 +48,15 @@ namespace Piri.Framework.Scheduler.Quartz.Service
             Result<bool> result;
             try
             {
-                _job = await _context.Job.Where(w => w.Id.Equals(jobId)).FirstOrDefaultAsync();
-                _job.IsActive = false;
-                _context.Job.Update(_job);
-                await _context.SaveChangesAsync();
-                result = new Result<bool>(true, "Job was successfully deleted.");
+                using (QuartzDataContext _context = new QuartzDataContext())
+                {
+                    _job = await _context.Job.Where(w => w.Id.Equals(jobId)).FirstOrDefaultAsync();
+                    _job.IsActive = false;
+                    _context.Job.Update(_job);
+                    await _context.SaveChangesAsync();
+                    result = new Result<bool>(true, "Job was successfully deleted.");
+                    _context.Dispose();
+                }
             }
             catch (Exception ex)
             {
@@ -61,8 +70,12 @@ namespace Piri.Framework.Scheduler.Quartz.Service
             List<Job> jobList;
             try
             {
-                jobList = await _context.Job.Include(i => i.JobData).Where(w => w.IsActive).ToListAsync();
-                result = new Result<List<JobDto>>(Mapper.Map<List<Job>, List<JobDto>>(jobList));
+                using (QuartzDataContext _context = new QuartzDataContext())
+                {
+                    jobList = await _context.Job.Include(i => i.JobData).Where(w => w.IsActive).ToListAsync();
+                    result = new Result<List<JobDto>>(Mapper.Map<List<Job>, List<JobDto>>(jobList));
+                    _context.Dispose();
+                }
             }
             catch (Exception ex)
             {
@@ -74,9 +87,13 @@ namespace Piri.Framework.Scheduler.Quartz.Service
         {
             try
             {
-                _job = await _context.Job.Where(w => w.Id.Equals(jobId)).FirstOrDefaultAsync();
-                _jobDto = Mapper.Map<Job, JobDto>(_job);
-                _result = new Result<JobDto>(_jobDto);
+                using (QuartzDataContext _context = new QuartzDataContext())
+                {
+                    _job = await _context.Job.Where(w => w.Id.Equals(jobId)).FirstOrDefaultAsync();
+                    _jobDto = Mapper.Map<Job, JobDto>(_job);
+                    _result = new Result<JobDto>(_jobDto);
+                    _context.Dispose();
+                }
             }
             catch (Exception ex)
             {
@@ -89,10 +106,14 @@ namespace Piri.Framework.Scheduler.Quartz.Service
         {
             try
             {
-                _job = Mapper.Map<JobDto, Job>(jobDto);
-                _context.Job.Update(_job);
-                await _context.SaveChangesAsync();
-                _result = new Result<JobDto>(Mapper.Map<Job, JobDto>(_job));
+                using (QuartzDataContext _context = new QuartzDataContext())
+                {
+                    _job = Mapper.Map<JobDto, Job>(jobDto);
+                    _context.Job.Update(_job);
+                    await _context.SaveChangesAsync();
+                    _result = new Result<JobDto>(Mapper.Map<Job, JobDto>(_job));
+                    _context.Dispose();
+                }
             }
             catch (Exception ex)
             {
@@ -105,8 +126,12 @@ namespace Piri.Framework.Scheduler.Quartz.Service
             _convertedName = jobName.Substring(0, 86);
             try
             {
-                _job = await _context.Job.Include(i => i.JobData).Where(w => w.JobData.FirstOrDefault().Name.Equals(_convertedName)).FirstOrDefaultAsync();
-                _result = new Result<JobDto>(Mapper.Map<Job, JobDto>(_job));
+                using (QuartzDataContext _context = new QuartzDataContext())
+                {
+                    _job = await _context.Job.Include(i => i.JobData).Where(w => w.JobData.FirstOrDefault().Name.Equals(_convertedName)).FirstOrDefaultAsync();
+                    _result = new Result<JobDto>(Mapper.Map<Job, JobDto>(_job));
+                    _context.Dispose();
+                }
             }
             catch (Exception ex)
             {

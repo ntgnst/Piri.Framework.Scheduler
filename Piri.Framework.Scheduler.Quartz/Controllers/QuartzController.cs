@@ -39,7 +39,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                 LastEndTime = null,
                 LastRunTime = null,
             };
-            Result<QuartzDto> result = await _scheduleJob.AddJob<SimpleTestProcess>(jobDto, "A simple job");
+            Result<QuartzDto> result = await _scheduleJob.AddJob<SimpleTestProcess>(jobDto, "A simple job", true);
             if (result.IsSuccess)
             {
                 await _jobService.AddJob(jobDto);

@@ -10,5 +10,6 @@ namespace Piri.Framework.Scheduler.Quartz.Interface
         Task<string> Post<T>(string url, List<KeyValuePair<string, string>> headerList, T model) where T : class;
         Task<string> PostAsync(string url, List<KeyValuePair<string, string>> headerList, string json);
         Task<string> NoBasePost<T>(string methodName, List<KeyValuePair<string, string>> headerList, T model) where T : class;
+        Task<string> PutAsync(string url, List<KeyValuePair<string, string>> headerList, string content);
     }
 }

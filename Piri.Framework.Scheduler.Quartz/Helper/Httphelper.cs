@@ -15,12 +15,12 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
         private HttpResponseMessage _response;
         public async Task<string> Get(string url, List<KeyValuePair<string, string>> headerList, string body)
         {
-            
+
             using (_client = new HttpClient())
             {
                 try
                 {
-                    if (headerList!=null)
+                    if (headerList != null && headerList.Any())
                     {
                         foreach (KeyValuePair<string, string> item in headerList)
                         {
@@ -29,7 +29,7 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
                     }
                     _response = await _client.GetAsync(new Uri(url));
                     _responseBody = await _response.Content.ReadAsStringAsync();
-                    await Console.Out.WriteLineAsync($"Replied from --> {url} \n  Response --> {_responseBody}");
+                    await WriteResponse(url,_responseBody);
                 }
                 catch (Exception ex)
                 {
@@ -39,11 +39,15 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
                 return _responseBody;
             }
         }
+        private async Task WriteResponse(string url,string responseBody)
+        {
+            await Console.Out.WriteLineAsync($"Replied from --> {url} \n  Response --> {_responseBody}");
+        }
         public async Task<string> NoBaseGet(string url, List<KeyValuePair<string, string>> headerList)
         {
             using (_client = new HttpClient())
             {
-                if (headerList.Any())
+                if (headerList != null && headerList.Any())
                 {
                     foreach (KeyValuePair<string, string> item in headerList)
                     {
@@ -52,6 +56,7 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
                 }
                 _response = await _client.GetAsync(new Uri(url));
                 _responseBody = await _response.Content.ReadAsStringAsync();
+                await WriteResponse(url, _responseBody);
                 _client.Dispose();
                 return _responseBody;
             }
@@ -60,7 +65,7 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
         {
             using (_client = new HttpClient())
             {
-                if (headerList.Any())
+                if (headerList != null && headerList.Any())
                 {
                     foreach (KeyValuePair<string, string> item in headerList)
                     {
@@ -71,23 +76,25 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
                 _response = await _client.PostAsync(url, new StringContent(JsonConvert.SerializeObject(model)));
                 _responseBody = await _response.Content.ReadAsStringAsync();
                 _client.Dispose();
+                await WriteResponse(url, _responseBody);
                 return _responseBody;
             }
         }
-        public async Task<string> NoBasePost<T>(string methodName, List<KeyValuePair<string, string>> headerList, T model) where T : class
+        public async Task<string> NoBasePost<T>(string url, List<KeyValuePair<string, string>> headerList, T model) where T : class
         {
             using (_client = new HttpClient())
             {
-                if (headerList.Any())
+                if (headerList != null && headerList.Any())
                 {
                     foreach (KeyValuePair<string, string> item in headerList)
                     {
                         _client.DefaultRequestHeaders.Add(item.Key, item.Value);
                     }
                 }
-                _response = await _client.PostAsync(methodName, new StringContent(JsonConvert.SerializeObject(model)));
+                _response = await _client.PostAsync(url, new StringContent(JsonConvert.SerializeObject(model)));
                 _responseBody = await _response.Content.ReadAsStringAsync();
                 _client.Dispose();
+                await WriteResponse(url, _responseBody);
                 return _responseBody;
             }
         }
@@ -95,7 +102,7 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
         {
             using (_client = new HttpClient())
             {
-                if (headerList.Any())
+                if (headerList != null && headerList.Any())
                 {
                     foreach (KeyValuePair<string, string> item in headerList)
                     {
@@ -105,8 +112,28 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
                 _response = await _client.PostAsync(url, new StringContent(json));
                 _responseBody = await _response.Content.ReadAsStringAsync();
                 _client.Dispose();
+                await WriteResponse(url, _responseBody);
                 return _responseBody;
             }
         }
+        public async Task<string> PutAsync(string url, List<KeyValuePair<string, string>> headerList, string content)
+        {
+            using (_client = new HttpClient())
+            {
+                if (headerList != null && headerList.Any())
+                {
+                    foreach (KeyValuePair<string, string> item in headerList)
+                    {
+                        _client.DefaultRequestHeaders.Add(item.Key, item.Value);
+                    }
+                }
+                _response = await _client.PostAsync(url, new StringContent(content));
+                _responseBody = await _response.Content.ReadAsStringAsync();
+                _client.Dispose();
+                await WriteResponse(url, _responseBody);
+                return _responseBody;
+            }
+        }
+
     }
 }
