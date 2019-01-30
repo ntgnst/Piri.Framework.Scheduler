@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Piri.Framework.Scheduler.Quartz.Extension;
@@ -8,13 +9,15 @@ using Piri.Framework.Scheduler.Quartz.Interface;
 using Piri.Framework.Scheduler.Quartz.Model;
 using Piri.Framework.Scheduler.Quartz.Service;
 using Quartz;
+using System.Configuration;
 
 namespace Piri.Framework.Scheduler.Quartz
 {
     public class Startup
     {
         private IHostingEnvironment _environment { get; }
-        public IConfigurationRoot _configuration { get; }
+        public IConfigurationRoot _configurationRoot { get; }
+        public IConfiguration _configuration;
 
         public Startup(IConfiguration configuration, IHostingEnvironment environment)
         {
@@ -24,8 +27,8 @@ namespace Piri.Framework.Scheduler.Quartz
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
-
-            _configuration = builder.Build();
+            _configuration = configuration;
+            _configurationRoot = builder.Build();
             _environment = environment;
         }
 
@@ -34,7 +37,16 @@ namespace Piri.Framework.Scheduler.Quartz
         {
             services.AddMvc();
             MapperInitializer.MapperConfiguration();
-            services.AddDbContext<QuartzDataContext>(ServiceLifetime.Singleton);
+            //services.AddDbContext<QuartzDataContext>(ServiceLifetime.Singleton);
+            services.AddDbContext<QuartzDataContext>(options =>
+            {
+                options.UseSqlServer("Server=albilsql01;Database=DB_Scheduler;User Id=pirischeduler;Password=pirischeduler5*", opt =>
+                {
+                    opt.EnableRetryOnFailure();
+                    opt.CommandTimeout(3000);
+                });
+            }, 
+            ServiceLifetime.Singleton);
             services.AddSingleton<IHttpHelper, HttpHelper>();
             services.AddTransient<IJobService, JobService>();
             services.AddTransient<IScheduleJob, QuartzService>();

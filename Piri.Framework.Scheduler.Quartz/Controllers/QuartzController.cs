@@ -42,6 +42,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
             Result<QuartzDto> result = await _scheduleJob.AddJob<SimpleTestProcess>(jobDto, "A simple job", true);
             if (result.IsSuccess)
             {
+                jobDto.IsRunning = true;
                 await _jobService.AddJob(jobDto);
             }
 
