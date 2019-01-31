@@ -1,0 +1,75 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@using Piri.Framework.Scheduler.Quartz.Domain
+@using System.Linq;
+@using Piri.Framework.Scheduler.Quartz.Interface.Result
+@model List<Result<JobDto>>
+@{
+    Layout = null;
+    JobDataDto jobDataDto = new JobDataDto();
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+    <script>
+        var refreshPage = function()
+        {
+            location.reload();
+        }
+    </script>
+</head>
+<body>
+
+    <h2>Job List</h2>
+    <button onclick="refreshPage()">Refresh</button>
+    <table>
+        <tr>
+            <th>Job Name</th>
+            <th>Is Active</th>
+            <th>Is Running</th>
+            <th>GUID</th>
+            <th>Timer Regex</th>
+            <th>Header</th>
+            <th>Body</th>
+            <th>Method</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            @if (item.IsSuccess)
+            {
+                jobDataDto = item.Data.JobDataDtoList.FirstOrDefault();
+            }
+            
+            <tr>
+                <td>@jobDataDto.Name</td>
+                <td>@item.Data.IsActive</td>
+                <td>@item.Data.IsRunning</td>
+                <td>@item.Data.Guid</td>
+                <td>@jobDataDto.TimerRegex</td>
+                <td>@jobDataDto.Header</td>
+                <td>@jobDataDto.Body</td>
+                <td>@jobDataDto.Method</td>
+            </tr>
+        }
+    </table>
+
+</body>
+</html>

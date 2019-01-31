@@ -9,6 +9,7 @@ using Piri.Framework.Scheduler.Quartz.Interface;
 using Piri.Framework.Scheduler.Quartz.Model;
 using Piri.Framework.Scheduler.Quartz.Service;
 using Quartz;
+using Swashbuckle.AspNetCore.Swagger;
 using System.Configuration;
 
 namespace Piri.Framework.Scheduler.Quartz
@@ -52,6 +53,18 @@ namespace Piri.Framework.Scheduler.Quartz
             services.AddTransient<IScheduleJob, QuartzService>();
 
             services.UseQuartz(typeof(SimpleTestProcess));
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1.0", new Info { Title = "Scheduler API", Version = "1.0",
+                    Description = @"REST services for managing your API ecosystem.
+## Quartz ##
+Manages your scheduled jobs via API.Adds new job , pausing all , resuming all etc."
+                , Contact = new Contact() { Name = "Piri Medya", Url = "http://pirimedya.com/" , Email = "info@pirimedya.com"}
+                });
+                c.CustomSchemaIds(x => x.FullName);
+                c.IncludeXmlComments(@"C:\PiriProject\Piri.Framework.Scheduler\Piri.Framework.Scheduler.Quartz\Piri.Framework.Scheduler.Quartz.xml",true);
+                c.UseReferencedDefinitionsForEnums();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,8 +79,13 @@ namespace Piri.Framework.Scheduler.Quartz
             }
             app.UseMvc().UseMvcWithDefaultRoute();
             //Result<QuartzDto> result = Extension.QuartzServiceUtilities.StartJob<SimpleTestProcess>("0/1 * * * * ?", true).GetAwaiter().GetResult();
-
+            
             app.UseMvc();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "Piri.Scheduler v1.0");
+            });
         }
     }
 }

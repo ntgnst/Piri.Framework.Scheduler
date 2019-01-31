@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Piri.Framework.Scheduler.Quartz.Controllers
 {
     [Route("api/quartz")]
-    public class QuartzController : Controller
+    public class QuartzController : ControllerBase
     {
         IJobService _jobService;
 
@@ -20,9 +20,21 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
             _jobService = jobService;
             _scheduleJob = scheduleJob;
         }
-        [Route("AddJob")]
+
+        /// <summary>
+        /// Creates a scheduled Job.
+        /// </summary>
+        /// <param name="jobDataDto"></param>
+        /// <returns>QuartzDto</returns>
+        /// <remarks>
+        /// ### REMARKS ###
+        /// The following codes are returned
+        /// - 400 - No sub domain is found that matches the SubDomainName property
+        /// - 200 - A Scheduled Job Created</remarks>
         [HttpPost]
-        public async Task<JsonResult> AddJob([FromBody]JobDataDto jobDataDto)
+        [ProducesResponseType(typeof(void), 404)]
+        [ProducesResponseType(typeof(void), 500)]
+        public async Task<Result<QuartzDto>> Post([FromBody]JobDataDto jobDataDto)
         {
             Guid guid = Guid.NewGuid();
             string jobName = $"{typeof(SimpleTestProcess).FullName}-{guid}";
@@ -46,31 +58,77 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                 await _jobService.AddJob(jobDto);
             }
 
-            return Json(result);
+            return result;
         }
-        [Route("GetList")]
-        public async Task<JsonResult> GetList()
+        /// <summary>
+        /// Gets list of scheduled Jobs.
+        /// </summary>
+        /// <param></param>
+        /// <returns>
+        /// <list type="JobDto"></list>
+        /// </returns>
+        /// <remarks>
+        /// ### REMARKS ###
+        /// The following codes are returned
+        /// - 400 - No sub domain is found that matches the SubDomainName property
+        /// - 200 - Scheduled Jobs Listed</remarks>
+        [HttpGet]
+        public async Task<List<Result<JobDto>>> Get()
         {
             Result<List<QuartzDto>> result = await _scheduleJob.GetAllWorkingJobs();
-            return Json(result);
+            List<Result<JobDto>> jobResult = new List<Result<JobDto>>();
+            foreach (var item in result.Data)
+            {
+                jobResult.Add(await _jobService.GetJobByName(item.JobKeyName));
+
+            }
+
+            return jobResult;
         }
-        [HttpGet]
-        [Route("PauseAll")]
-        public async Task<JsonResult> PauseAll()
+        /// <summary>
+        /// Pauses all scheduled Jobs.
+        /// </summary>
+        /// <param></param>
+        /// <returns>string</returns>
+        /// <remarks>
+        /// ### REMARKS ###
+        /// The following codes are returned
+        /// - 400 - No sub domain is found that matches the SubDomainName property
+        /// - 200 - All scheduled Jobs Paused </remarks>
+        [HttpGet("PauseAll")]
+        public async Task<Result<string>> PauseAll()
         {
             Result<string> result = await _scheduleJob.PauseAllJobs();
-            return Json(result);
+            return result;
         }
-        [HttpGet]
-        [Route("ResumeAll")]
-        public async Task<JsonResult> ResumeAll()
+        /// <summary>
+        /// Resumes all scheduled Jobs.
+        /// </summary>
+        /// <param></param>
+        /// <returns>string</returns>
+        /// <remarks>
+        /// ### REMARKS ###
+        /// The following codes are returned
+        /// - 400 - No sub domain is found that matches the SubDomainName property
+        /// - 200 - All scheduled Jobs Resumed </remarks>
+        [HttpGet("ResumeAll")]
+        public async Task<Result<string>> ResumeAll()
         {
             Result<string> result = await _scheduleJob.ResumeAllJobs();
-            return Json(result);
+            return result;
         }
-        [HttpGet]
-        [Route("InitializeAllJobs")]
-        public async Task<JsonResult> InitializeAllJobs()
+        /// <summary>
+        /// Initializes all scheduled Jobs.
+        /// </summary>
+        /// <param></param>
+        /// <returns>string</returns>
+        /// <remarks>
+        /// ### REMARKS ###
+        /// The following codes are returned
+        /// - 400 - No sub domain is found that matches the SubDomainName property
+        /// - 200 - All scheduled Jobs Initialized </remarks>
+        [HttpGet("InitializeAllJobs")]
+        public async Task<Result<List<Result<JobDto>>>> InitializeAllJobs()
         {
             Result<List<Result<JobDto>>> result = await _scheduleJob.InitializeAllJobs();
             if (result.IsSuccess && result.Data.Any())
@@ -84,14 +142,22 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                     }
                 });
             }
-            return Json(result);
+            return result;
         }
-
-        [HttpGet]
-        [Route("InitializeJob")]
+        /// <summary>
+        /// Initializes a scheduled Job.
+        /// </summary>
+        /// <param></param>
+        /// <returns>string</returns>
+        /// <remarks>
+        /// ### REMARKS ###
+        /// The following codes are returned
+        /// - 400 - No sub domain is found that matches the SubDomainName property
+        /// - 200 - The scheduled Job Initialized </remarks>
+        [HttpGet("InitializeJob")]
         public async Task<JsonResult> InitializeJob()
         {
-            return Json("");
+            return null;
         }
     }
 }
