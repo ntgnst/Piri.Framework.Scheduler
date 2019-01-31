@@ -62,7 +62,7 @@ Manages your scheduled jobs via API.Adds new job , pausing all , resuming all et
                 , Contact = new Contact() { Name = "Piri Medya", Url = "http://pirimedya.com/" , Email = "info@pirimedya.com"}
                 });
                 c.CustomSchemaIds(x => x.FullName);
-                c.IncludeXmlComments(@"C:\PiriProject\Piri.Framework.Scheduler\Piri.Framework.Scheduler.Quartz\Piri.Framework.Scheduler.Quartz.xml",true);
+                c.IncludeXmlComments($"{_environment.WebRootPath}\\Piri.Framework.Scheduler.Quartz.xml",true);
                 c.UseReferencedDefinitionsForEnums();
             });
         }
@@ -77,15 +77,20 @@ Manages your scheduled jobs via API.Adds new job , pausing all , resuming all et
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.UseMvc().UseMvcWithDefaultRoute();
-            //Result<QuartzDto> result = Extension.QuartzServiceUtilities.StartJob<SimpleTestProcess>("0/1 * * * * ?", true).GetAwaiter().GetResult();
-            
-            app.UseMvc();
+            else
+            {
+                app.UseMiddleware<CustomExceptionMiddleware>();
+            }
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "Piri.Scheduler v1.0");
             });
+            app.UseMvc().UseMvcWithDefaultRoute();
+            //Result<QuartzDto> result = Extension.QuartzServiceUtilities.StartJob<SimpleTestProcess>("0/1 * * * * ?", true).GetAwaiter().GetResult();
+            
+            
+            
         }
     }
 }

@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Piri.Framework.Scheduler.Quartz</name>
+    </assembly>
+    <members>
+        <member name="M:Piri.Framework.Scheduler.Quartz.Controllers.QuartzController.Post(Piri.Framework.Scheduler.Quartz.Domain.JobDataDto)">
+            <summary>
+            Creates a scheduled Job.
+            </summary>
+            <param name="jobDataDto"></param>
+            <returns>QuartzDto</returns>
+            <remarks>
+            ### REMARKS ###
+            The following codes are returned
+            - 400 - No sub domain is found that matches the SubDomainName property
+            - 200 - A Scheduled Job Created</remarks>
+        </member>
+        <member name="M:Piri.Framework.Scheduler.Quartz.Controllers.QuartzController.Get">
+            <summary>
+            Gets list of scheduled Jobs.
+            </summary>
+            <param></param>
+            <returns>
+            <list type="JobDto"></list>
+            </returns>
+            <remarks>
+            ### REMARKS ###
+            The following codes are returned
+            - 400 - No sub domain is found that matches the SubDomainName property
+            - 200 - Scheduled Jobs Listed</remarks>
+        </member>
+        <member name="M:Piri.Framework.Scheduler.Quartz.Controllers.QuartzController.PauseAll">
+            <summary>
+            Pauses all scheduled Jobs.
+            </summary>
+            <param></param>
+            <returns>string</returns>
+            <remarks>
+            ### REMARKS ###
+            The following codes are returned
+            - 400 - No sub domain is found that matches the SubDomainName property
+            - 200 - All scheduled Jobs Paused </remarks>
+        </member>
+        <member name="M:Piri.Framework.Scheduler.Quartz.Controllers.QuartzController.ResumeAll">
+            <summary>
+            Resumes all scheduled Jobs.
+            </summary>
+            <param></param>
+            <returns>string</returns>
+            <remarks>
+            ### REMARKS ###
+            The following codes are returned
+            - 400 - No sub domain is found that matches the SubDomainName property
+            - 200 - All scheduled Jobs Resumed </remarks>
+        </member>
+        <member name="M:Piri.Framework.Scheduler.Quartz.Controllers.QuartzController.InitializeAllJobs">
+            <summary>
+            Initializes all scheduled Jobs.
+            </summary>
+            <param></param>
+            <returns>string</returns>
+            <remarks>
+            ### REMARKS ###
+            The following codes are returned
+            - 400 - No sub domain is found that matches the SubDomainName property
+            - 200 - All scheduled Jobs Initialized </remarks>
+        </member>
+        <member name="M:Piri.Framework.Scheduler.Quartz.Controllers.QuartzController.InitializeJob">
+            <summary>
+            Initializes a scheduled Job.
+            </summary>
+            <param></param>
+            <returns>string</returns>
+            <remarks>
+            ### REMARKS ###
+            The following codes are returned
+            - 400 - No sub domain is found that matches the SubDomainName property
+            - 200 - The scheduled Job Initialized </remarks>
+        </member>
+    </members>
+</doc>

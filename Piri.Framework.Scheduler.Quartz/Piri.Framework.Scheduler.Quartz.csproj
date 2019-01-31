@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>C:\PiriProject\Piri.Framework.Scheduler\Piri.Framework.Scheduler.Quartz\Piri.Framework.Scheduler.Quartz.xml</DocumentationFile>
+    <DocumentationFile>~wwwroot\Piri.Framework.Scheduler.Quartz.xml</DocumentationFile>
     <OutputPath>bin\Debug\netcoreapp2.0\</OutputPath>
   </PropertyGroup>
 
@@ -34,6 +34,12 @@
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Piri.Framework.Scheduler.Quartz.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

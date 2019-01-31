@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Piri.Framework.Scheduler.Quartz", "Piri.Framework.Scheduler.Quartz\Piri.Framework.Scheduler.Quartz.csproj", "{0315A49D-7DCA-4120-835D-B8DAF74B6430}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Piri.Framework.Scheduler.Quartz.Test", "Piri.Framework.Scheduler.Quartz.Test\Piri.Framework.Scheduler.Quartz.Test.csproj", "{196D78C8-81C9-4D6A-BEF8-E58DA24501DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Piri.Framework.Scheduler.Quartz.Test", "Piri.Framework.Scheduler.Quartz.Test\Piri.Framework.Scheduler.Quartz.Test.csproj", "{196D78C8-81C9-4D6A-BEF8-E58DA24501DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
