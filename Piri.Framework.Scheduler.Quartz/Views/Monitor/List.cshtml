@@ -30,8 +30,7 @@
         }
     </style>
     <script>
-        var refreshPage = function()
-        {
+        var refreshPage = function () {
             location.reload();
         }
     </script>
@@ -51,24 +50,27 @@
             <th>Body</th>
             <th>Method</th>
         </tr>
-        @foreach (var item in Model)
+        @if (Model != null)
         {
-            @if (item.IsSuccess)
+            @foreach (var item in Model)
             {
-                jobDataDto = item.Data.JobDataDtoList.FirstOrDefault();
+                @if (item.IsSuccess)
+                {
+                    jobDataDto = item.Data?.JobDataDtoList?.FirstOrDefault();
+                    <tr>
+                        <td>@jobDataDto?.Name</td>
+                        <td>@item?.Data?.IsActive</td>
+                        <td>@item?.Data?.IsRunning</td>
+                        <td>@item?.Data?.Guid</td>
+                        <td>@jobDataDto?.TimerRegex</td>
+                        <td>@jobDataDto?.Header</td>
+                        <td>@jobDataDto?.Body</td>
+                        <td>@jobDataDto?.Method</td>
+                    </tr>
+                }
             }
-            
-            <tr>
-                <td>@jobDataDto.Name</td>
-                <td>@item.Data.IsActive</td>
-                <td>@item.Data.IsRunning</td>
-                <td>@item.Data.Guid</td>
-                <td>@jobDataDto.TimerRegex</td>
-                <td>@jobDataDto.Header</td>
-                <td>@jobDataDto.Body</td>
-                <td>@jobDataDto.Method</td>
-            </tr>
         }
+
     </table>
 
 </body>

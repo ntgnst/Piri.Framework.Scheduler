@@ -23,7 +23,7 @@ namespace Piri.Framework.Scheduler.Quartz.Model
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=albilsql01;Database=DB_Scheduler;User Id=yenisafak;Password=yenisafak5*");
+                optionsBuilder.UseSqlServer("Server=10.0.130.5;Database=DB_Scheduler;User Id=yenisafak;Password=yenisafak5*");
             }
         }
 
