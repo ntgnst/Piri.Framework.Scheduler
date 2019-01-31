@@ -155,11 +155,35 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                     _context.Job.Remove(job);
                     await _context.SaveChangesAsync();
                 }
-                result = new Result<string>(true,ResultTypeEnum.Success,$"Succesfully deleted Job GUID : {guid.ToUpperInvariant()}");
+                result = new Result<string>(true, ResultTypeEnum.Success, $"Succesfully deleted Job GUID : {guid.ToUpperInvariant()}");
             }
             catch (Exception ex)
             {
                 result = new Result<string>(true, ResultTypeEnum.Success, $"Deletion of Job unsuccessful. Ex : {ex.ToString()}");
+            }
+
+            return result;
+        }
+
+        public async Task<Result<List<Result<JobDto>>>> PauseAll()
+        {
+            Result<List<Result<JobDto>>> result;
+            List<Result<JobDto>> innerResult = new List<Result<JobDto>>();
+            try
+            {
+                Result<List<JobDto>> allJobs = await GetAllJobs();
+                
+                    allJobs.Data?.ForEach(async f =>
+                    {
+                        f.IsPaused = true;
+                        innerResult.Add(await UpdateJob(f));
+                    });
+
+                result = new Result<List<Result<JobDto>>>(innerResult);
+            }
+            catch (Exception ex)
+            {
+                result = new Result<List<Result<JobDto>>>(false, $"An error occured while pausing all jobs. Ex : {ex.ToString()}");
             }
 
             return result;

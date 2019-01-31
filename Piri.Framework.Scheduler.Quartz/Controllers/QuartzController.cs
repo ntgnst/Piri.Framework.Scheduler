@@ -112,6 +112,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                     {
                         //DONE : When pause all jobs , update job props.
                         jobDto.IsPaused = true;
+                        jobDto.IsRunning = false;
                         result.Add(await _jobService.UpdateJob(jobDto));
                     }
                 }
@@ -143,6 +144,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                     {
                         //DONE : When resume all jobs , update job props.
                         jobDto.IsPaused = false;
+                        jobDto.IsRunning = true;
                         result.Add(await _jobService.UpdateJob(jobDto));
                     }
                 }

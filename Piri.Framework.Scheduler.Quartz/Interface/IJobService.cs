@@ -13,5 +13,6 @@ namespace Piri.Framework.Scheduler.Quartz.Interface
         Task<Result<JobDto>> UpdateJob(JobDto jobDto);
         Task<Result<JobDto>> AddJob(JobDto jobDto);
         Task<Result<JobDto>> GetJobByName(string jobName);
+        Task<Result<List<Result<JobDto>>>> PauseAll();
     }
 }
