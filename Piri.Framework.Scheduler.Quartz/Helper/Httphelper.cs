@@ -15,27 +15,22 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
         private HttpClient _client;
         private HttpResponseMessage _response;
         private readonly ILogger _logger;
+        private Dictionary<string, string> _headers;
         public HttpHelper(ILogger<HttpHelper> logger)
         {
             _logger = logger;
         }
-        public async Task<string> Get(string url, List<KeyValuePair<string, string>> headerList, string body)
+        public async Task<string> Get(string url, string header, string body)
         {
 
             using (_client = new HttpClient())
             {
                 try
                 {
-                    if (headerList != null && headerList.Any())
-                    {
-                        foreach (KeyValuePair<string, string> item in headerList)
-                        {
-                            _client.DefaultRequestHeaders.Add(item.Key, item.Value);
-                        }
-                    }
+                    ConvertAndAddHeader(_client, header);
                     _response = await _client.GetAsync(new Uri(url));
                     _responseBody = await _response.Content.ReadAsStringAsync();
-                    await WriteResponse(url,_responseBody);
+                    await WriteResponse(url, _responseBody);
                 }
                 catch (Exception ex)
                 {
@@ -45,40 +40,32 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
                 return _responseBody;
             }
         }
-        private async Task WriteResponse(string url,string responseBody)
-        {
-            _logger.LogInformation($"Replied from --> {url} \n  Response --> {_responseBody}");
-        }
-        public async Task<string> NoBaseGet(string url, List<KeyValuePair<string, string>> headerList)
+        public async Task<string> NoBaseGet(string url, string header)
         {
             using (_client = new HttpClient())
             {
-                if (headerList != null && headerList.Any())
+                try
                 {
-                    foreach (KeyValuePair<string, string> item in headerList)
-                    {
-                        _client.DefaultRequestHeaders.Add(item.Key, item.Value);
-                    }
+                    ConvertAndAddHeader(_client,header);
+                    _response = await _client.GetAsync(new Uri(url));
+                    _responseBody = await _response.Content.ReadAsStringAsync();
+                    await WriteResponse(url, _responseBody);
                 }
-                _response = await _client.GetAsync(new Uri(url));
-                _responseBody = await _response.Content.ReadAsStringAsync();
-                await WriteResponse(url, _responseBody);
-                _client.Dispose();
-                return _responseBody;
-            }
-        }
-        public async Task<string> Post<T>(string url, List<KeyValuePair<string, string>> headerList, T model) where T : class
-        {
-            using (_client = new HttpClient())
-            {
-                if (headerList != null && headerList.Any())
+                catch (Exception ex)
                 {
-                    foreach (KeyValuePair<string, string> item in headerList)
-                    {
-                        _client.DefaultRequestHeaders.Add(item.Key, item.Value);
-                    }
+                    _responseBody = ex.ToString();
+                    _logger.LogError($"HttpHelper.NoBaseGet Method Ex:{ex}");
                 }
 
+                _client.Dispose();
+                return _responseBody;
+            }
+        }
+        public async Task<string> Post<T>(string url, string header, T model) where T : class
+        {
+            using (_client = new HttpClient())
+            {
+                ConvertAndAddHeader(_client, header);
                 _response = await _client.PostAsync(url, new StringContent(JsonConvert.SerializeObject(model)));
                 _responseBody = await _response.Content.ReadAsStringAsync();
                 _client.Dispose();
@@ -86,17 +73,11 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
                 return _responseBody;
             }
         }
-        public async Task<string> NoBasePost<T>(string url, List<KeyValuePair<string, string>> headerList, T model) where T : class
+        public async Task<string> NoBasePost<T>(string url, string header, T model) where T : class
         {
             using (_client = new HttpClient())
             {
-                if (headerList != null && headerList.Any())
-                {
-                    foreach (KeyValuePair<string, string> item in headerList)
-                    {
-                        _client.DefaultRequestHeaders.Add(item.Key, item.Value);
-                    }
-                }
+                ConvertAndAddHeader(_client, header);
                 _response = await _client.PostAsync(url, new StringContent(JsonConvert.SerializeObject(model)));
                 _responseBody = await _response.Content.ReadAsStringAsync();
                 _client.Dispose();
@@ -104,41 +85,44 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
                 return _responseBody;
             }
         }
-        public async Task<string> PostAsync(string url, List<KeyValuePair<string, string>> headerList, string json)
+        public async Task<string> PostAsync(string url, string header, string json)
         {
             using (_client = new HttpClient())
             {
-                if (headerList != null && headerList.Any())
-                {
-                    foreach (KeyValuePair<string, string> item in headerList)
-                    {
-                        _client.DefaultRequestHeaders.Add(item.Key, item.Value);
-                    }
-                }
+                ConvertAndAddHeader(_client, header);
                 _response = await _client.PostAsync(url, new StringContent(json));
                 _responseBody = await _response.Content.ReadAsStringAsync();
                 _client.Dispose();
                 await WriteResponse(url, _responseBody);
-                return _responseBody;
             }
+            return _responseBody;
         }
-        public async Task<string> PutAsync(string url, List<KeyValuePair<string, string>> headerList, string content)
+        public async Task<string> PutAsync(string url, string header, string content)
         {
             using (_client = new HttpClient())
             {
-                if (headerList != null && headerList.Any())
-                {
-                    foreach (KeyValuePair<string, string> item in headerList)
-                    {
-                        _client.DefaultRequestHeaders.Add(item.Key, item.Value);
-                    }
-                }
+                ConvertAndAddHeader(_client, header);
                 _response = await _client.PostAsync(url, new StringContent(content));
                 _responseBody = await _response.Content.ReadAsStringAsync();
                 _client.Dispose();
                 await WriteResponse(url, _responseBody);
-                return _responseBody;
             }
+            return _responseBody;
+        }
+        private void ConvertAndAddHeader(HttpClient client, string header)
+        {
+            if (string.IsNullOrEmpty(header))
+            {
+                _headers = JsonConvert.DeserializeObject<Dictionary<string, string>>(header);
+                foreach (KeyValuePair<string, string> headerPair in _headers)
+                {
+                    client.DefaultRequestHeaders.Add(headerPair.Key, headerPair.Value);
+                }
+            }
+        }
+        private async Task WriteResponse(string url, string responseBody)
+        {
+            _logger.LogInformation($"Replied from --> {url} \n  Response --> {_responseBody}");
         }
 
     }

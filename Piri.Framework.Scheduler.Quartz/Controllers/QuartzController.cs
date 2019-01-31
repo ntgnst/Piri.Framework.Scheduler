@@ -17,7 +17,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
         IJobService _jobService;
         private readonly ILogger _logger;
         private readonly IScheduleJob _scheduleJob;
-        public QuartzController(IJobService jobService, IScheduleJob scheduleJob ,ILogger<QuartzController> logger)
+        public QuartzController(IJobService jobService, IScheduleJob scheduleJob, ILogger<QuartzController> logger)
         {
             _logger = logger;
             _jobService = jobService;
@@ -85,7 +85,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                 jobResult.Add(await _jobService.GetJobByName(item.JobKeyName));
 
             }
-            _logger.LogInformation("api/quartz/get replied :",jobResult);
+            _logger.LogInformation("api/quartz/get replied :", jobResult);
             return jobResult;
         }
         /// <summary>
@@ -99,10 +99,24 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
         /// - 400 - No sub domain is found that matches the SubDomainName property
         /// - 200 - All scheduled Jobs Paused </remarks>
         [HttpGet("PauseAll")]
-        public async Task<Result<string>> PauseAll()
+        public async Task<List<Result<JobDto>>> PauseAll()
         {
-            Result<string> result = await _scheduleJob.PauseAllJobs();
-            //TODO : When pause all jobs , update job props.
+            await _scheduleJob.PauseAllJobs();
+            Result<List<JobDto>> pauseResult = await _jobService.GetAllJobs();
+            List<Result<JobDto>> result = new List<Result<JobDto>>();
+            if (pauseResult.IsSuccess)
+            {
+                if (pauseResult.Data != null)
+                {
+                    foreach (JobDto jobDto in pauseResult.Data)
+                    {
+                        //DONE : When pause all jobs , update job props.
+                        jobDto.IsPaused = true;
+                        result.Add(await _jobService.UpdateJob(jobDto));
+                    }
+                }
+            }
+            
             return result;
         }
         /// <summary>
@@ -116,10 +130,23 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
         /// - 400 - No sub domain is found that matches the SubDomainName property
         /// - 200 - All scheduled Jobs Resumed </remarks>
         [HttpGet("ResumeAll")]
-        public async Task<Result<string>> ResumeAll()
+        public async Task<List<Result<JobDto>>> ResumeAll()
         {
-            Result<string> result = await _scheduleJob.ResumeAllJobs();
-            //TODO : When resume all jobs , update job props.
+            await _scheduleJob.ResumeAllJobs();
+            Result<List<JobDto>> pauseResult = await _jobService.GetAllJobs();
+            List<Result<JobDto>> result = new List<Result<JobDto>>();
+            if (pauseResult.IsSuccess)
+            {
+                if (pauseResult.Data != null)
+                {
+                    foreach (JobDto jobDto in pauseResult.Data)
+                    {
+                        //DONE : When resume all jobs , update job props.
+                        jobDto.IsPaused = false;
+                        result.Add(await _jobService.UpdateJob(jobDto));
+                    }
+                }
+            }
             return result;
         }
         /// <summary>
@@ -163,6 +190,24 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
         public async Task<JsonResult> InitializeJob()
         {
             return null;
+        }
+        
+        
+        /// <summary>
+        /// Deletes a scheduled Job.
+        /// </summary>
+        /// <param></param>
+        /// <returns>string</returns>
+        /// <remarks>
+        /// ### REMARKS ###
+        /// The following codes are returned
+        /// - 400 - No sub domain is found that matches the SubDomainName property
+        /// - 200 - The scheduled Job Deleted </remarks>
+        [HttpPost("DeleteJob")]
+        public async Task<Result<string>> DeleteJob(string guid)
+        {
+            Result<string> result = await _jobService.DeleteJob(guid);
+            return result;
         }
     }
 }

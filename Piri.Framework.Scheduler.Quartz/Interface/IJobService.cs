@@ -9,7 +9,7 @@ namespace Piri.Framework.Scheduler.Quartz.Interface
     {
         Task<Result<List<JobDto>>> GetAllJobs();
         Task<Result<JobDto>> GetJobById(int jobId);
-        Task<Result<bool>> DeleteJob(int jobId);
+        Task<Result<string>> DeleteJob(string guid);
         Task<Result<JobDto>> UpdateJob(JobDto jobDto);
         Task<Result<JobDto>> AddJob(JobDto jobDto);
         Task<Result<JobDto>> GetJobByName(string jobName);

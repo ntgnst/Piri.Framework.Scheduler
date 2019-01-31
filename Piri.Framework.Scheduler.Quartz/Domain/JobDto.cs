@@ -16,6 +16,7 @@ namespace Piri.Framework.Scheduler.Quartz.Domain
         public DateTime? LastEndTime { get; set; }
         public bool IsActive { get; set; }
         public bool IsRunning { get; set; }
+        public bool IsPaused { get; set; }
 
         public List<JobDataDto> JobDataDtoList { get; set; }
     }

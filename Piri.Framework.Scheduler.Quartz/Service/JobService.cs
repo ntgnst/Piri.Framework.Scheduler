@@ -17,6 +17,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
         private Job _job;
         private JobDto _jobDto;
         private Result<JobDto> _result;
+        private Guid _guid;
         private readonly QuartzDataContext _context;
         public JobService(QuartzDataContext context)
         {
@@ -29,12 +30,13 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                 using (QuartzDataContext _context = new QuartzDataContext())
                 {
                     _job = Mapper.Map<JobDto, Job>(jobDto);
+                    _job.UpdatedDate = DateTime.Now;
+                    _job.CreatedDate = DateTime.Now;
                     await _context.Job.AddAsync(_job);
                     await _context.SaveChangesAsync();
                     _result = new Result<JobDto>(Mapper.Map<Job, JobDto>(_job));
                     _context.Dispose();
                 }
-                    
             }
             catch (Exception ex)
             {
@@ -109,6 +111,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                 using (QuartzDataContext _context = new QuartzDataContext())
                 {
                     _job = Mapper.Map<JobDto, Job>(jobDto);
+                    _job.UpdatedDate = DateTime.Now;
                     _context.Job.Update(_job);
                     await _context.SaveChangesAsync();
                     _result = new Result<JobDto>(Mapper.Map<Job, JobDto>(_job));
@@ -138,6 +141,28 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                 _result = new Result<JobDto>(false, $"An error occured while getting job by name. Ex: {ex.ToString()}");
             }
             return _result;
+        }
+        public async Task<Result<string>> DeleteJob(string guid)
+        {
+            Result<string> result;
+            try
+            {
+                using (QuartzDataContext _context = new QuartzDataContext())
+                {
+                    _guid = Guid.Parse(guid);
+                    Job job = await _context.Job.Where(w => w.Guid.Equals(_guid)).FirstOrDefaultAsync();
+                    _context.JobData.RemoveRange(job.JobData);
+                    _context.Job.Remove(job);
+                    await _context.SaveChangesAsync();
+                }
+                result = new Result<string>(true,ResultTypeEnum.Success,$"Succesfully deleted Job GUID : {guid.ToUpperInvariant()}");
+            }
+            catch (Exception ex)
+            {
+                result = new Result<string>(true, ResultTypeEnum.Success, $"Deletion of Job unsuccessful. Ex : {ex.ToString()}");
+            }
+
+            return result;
         }
     }
 }

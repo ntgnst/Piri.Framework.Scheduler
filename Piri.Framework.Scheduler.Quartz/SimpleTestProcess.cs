@@ -33,7 +33,7 @@ namespace Piri.Framework.Scheduler.Quartz
                     switch (_jobDataDto.Method.ToLower())
                     {
                         case HttpMethodCodes.GET:
-                            await _httpHelper.Get(_jobDataDto.Url, null, _jobDataDto.Body);
+                            await _httpHelper.Get(_jobDataDto.Url, _jobDataDto.Header, _jobDataDto.Body);
                             break;
                         case HttpMethodCodes.HEAD:
                             break;
@@ -44,7 +44,7 @@ namespace Piri.Framework.Scheduler.Quartz
                         case HttpMethodCodes.PATCH:
                             break;
                         case HttpMethodCodes.POST:
-                            await _httpHelper.PostAsync(_jobDataDto.Url, null, _jobDataDto.Body);
+                            await _httpHelper.PostAsync(_jobDataDto.Url, _jobDataDto.Header, _jobDataDto.Body);
                             break;
                         case HttpMethodCodes.PUT:
                             break;

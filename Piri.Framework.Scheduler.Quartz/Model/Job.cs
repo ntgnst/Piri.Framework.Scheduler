@@ -16,6 +16,9 @@ namespace Piri.Framework.Scheduler.Quartz.Model
         public DateTime? LastEndTime { get; set; }
         public bool IsActive { get; set; }
         public bool IsRunning { get; set; }
+        public bool IsPaused { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime UpdatedDate { get; set; }
 
         public virtual ICollection<JobData> JobData { get; set; }
     }

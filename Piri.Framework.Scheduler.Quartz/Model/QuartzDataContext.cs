@@ -23,7 +23,7 @@ namespace Piri.Framework.Scheduler.Quartz.Model
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=10.0.130.5;Database=DB_Scheduler;User Id=yenisafak;Password=yenisafak5*");
+                optionsBuilder.UseSqlServer("Server=10.0.130.5;Database=DB_Scheduler;User Id=pirischeduler;Password=pirischeduler5*;");
             }
         }
 
@@ -33,11 +33,15 @@ namespace Piri.Framework.Scheduler.Quartz.Model
 
             modelBuilder.Entity<Job>(entity =>
             {
+                entity.Property(e => e.CreatedDate).HasColumnType("date");
+
                 entity.Property(e => e.Guid).HasColumnName("GUID");
 
                 entity.Property(e => e.LastEndTime).HasColumnType("date");
 
                 entity.Property(e => e.LastRunTime).HasColumnType("date");
+
+                entity.Property(e => e.UpdatedDate).HasColumnType("date");
             });
 
             modelBuilder.Entity<JobData>(entity =>
@@ -57,7 +61,6 @@ namespace Piri.Framework.Scheduler.Quartz.Model
                 entity.HasOne(d => d.Job)
                     .WithMany(p => p.JobData)
                     .HasForeignKey(d => d.JobId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_JobData_Job");
             });
         }

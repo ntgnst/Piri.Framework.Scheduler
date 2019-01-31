@@ -78,5 +78,17 @@
             - 400 - No sub domain is found that matches the SubDomainName property
             - 200 - The scheduled Job Initialized </remarks>
         </member>
+        <member name="M:Piri.Framework.Scheduler.Quartz.Controllers.QuartzController.DeleteJob(System.String)">
+            <summary>
+            Deletes a scheduled Job.
+            </summary>
+            <param></param>
+            <returns>string</returns>
+            <remarks>
+            ### REMARKS ###
+            The following codes are returned
+            - 400 - No sub domain is found that matches the SubDomainName property
+            - 200 - The scheduled Job Deleted </remarks>
+        </member>
     </members>
 </doc>
