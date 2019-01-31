@@ -1,4 +1,5 @@
-﻿using Piri.Framework.Scheduler.Quartz.Domain;
+﻿using Microsoft.Extensions.Logging;
+using Piri.Framework.Scheduler.Quartz.Domain;
 using Piri.Framework.Scheduler.Quartz.Interface;
 using Piri.Framework.Scheduler.Quartz.Interface.Result;
 using Quartz;
@@ -21,9 +22,11 @@ namespace Piri.Framework.Scheduler.Quartz.Service
         private ITrigger _trigger;
         private string _jobName;
         private DateTimeOffset _dateTimeOffset;
-        public QuartzService(IJobService jobService)
+        private readonly ILogger _logger;
+        public QuartzService(IJobService jobService,ILogger<QuartzService> logger)
         {
             _jobService = jobService;
+            _logger = logger;
         }
         public async Task<Result<QuartzDto>> StartJob<TJob>(JobDto jobDto, bool isStartNow = false) where TJob : IJob
         {
@@ -41,10 +44,12 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                 _cronTrigger = GenerateCronTrigger(jobDto, isStartNow, _jobName);
                 _dateTimeOffset = await _scheduler.ScheduleJob(_job, _cronTrigger);
                 result = new Result<QuartzDto>(new QuartzDto() { Name = _jobName, Description = _job?.Description, JobKeyName = _job.Key.ToString(), IsActive = true, IsRunning = true, PreviousFireTime = _dateTimeOffset.LocalDateTime.ToString() });
+                _logger.LogInformation("StartJob worked.", result);
             }
             catch (Exception ex)
             {
                 result = new Result<QuartzDto>(ResultTypeEnum.Error, null, $"An error occured while creating and starting job. Ex : {ex.ToString()}");
+                _logger.LogInformation("StartJob failed.", ex);
             }
             return result;
         }
@@ -109,7 +114,7 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                     _scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
                     await _scheduler.Start();
                     _jobName = jobDto.JobDataDtoList.FirstOrDefault().Name;
-                    _job = CreateJobDetail<TJob>(jobDto, description);
+                    _job = CreateJobDetail<TJob>(jobDto, jobDto.JobDataDtoList.FirstOrDefault().Name);
 
                     if (await _scheduler.CheckExists(_job.Key))
                     {
@@ -175,10 +180,12 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                     }
                 }
                 result = new Result<List<QuartzDto>>(modelList);
+                _logger.LogInformation("GetAllWorkingJobs worked.", result);
             }
             catch (Exception ex)
             {
                 result = new Result<List<QuartzDto>>(false, $"QuartzUtilizationService.GetAllWorkingJobs Method Ex : {ex.ToString()}");
+                _logger.LogError("GetAllWorkingJobs failed.", ex);
             }
 
             return result;

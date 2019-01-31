@@ -30,7 +30,7 @@ namespace Piri.Framework.Scheduler.Quartz
                 _jobDataDto = _result.Data?.JobDataDtoList?.FirstOrDefault();
                 if (_jobDataDto != null)
                 {
-                    switch (_jobDataDto.Method)
+                    switch (_jobDataDto.Method.ToLower())
                     {
                         case HttpMethodCodes.GET:
                             await _httpHelper.Get(_jobDataDto.Url, null, _jobDataDto.Body);

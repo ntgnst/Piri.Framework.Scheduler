@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Piri.Framework.Scheduler.Quartz.Domain;
 using Piri.Framework.Scheduler.Quartz.Interface;
 using Piri.Framework.Scheduler.Quartz.Interface.Result;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,10 +15,11 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
     public class QuartzController : ControllerBase
     {
         IJobService _jobService;
-
+        private readonly ILogger _logger;
         private readonly IScheduleJob _scheduleJob;
-        public QuartzController(IJobService jobService, IScheduleJob scheduleJob)
+        public QuartzController(IJobService jobService, IScheduleJob scheduleJob ,ILogger<QuartzController> logger)
         {
+            _logger = logger;
             _jobService = jobService;
             _scheduleJob = scheduleJob;
         }
@@ -51,7 +54,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                 LastEndTime = null,
                 LastRunTime = null,
             };
-            Result<QuartzDto> result = await _scheduleJob.AddJob<SimpleTestProcess>(jobDto, "A simple job", true);
+            Result<QuartzDto> result = await _scheduleJob.AddJob<SimpleTestProcess>(jobDto, "", true);
             if (result.IsSuccess)
             {
                 jobDto.IsRunning = true;
@@ -82,7 +85,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                 jobResult.Add(await _jobService.GetJobByName(item.JobKeyName));
 
             }
-
+            _logger.LogInformation("api/quartz/get replied :",jobResult);
             return jobResult;
         }
         /// <summary>
@@ -99,6 +102,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
         public async Task<Result<string>> PauseAll()
         {
             Result<string> result = await _scheduleJob.PauseAllJobs();
+            //TODO : When pause all jobs , update job props.
             return result;
         }
         /// <summary>
@@ -115,6 +119,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
         public async Task<Result<string>> ResumeAll()
         {
             Result<string> result = await _scheduleJob.ResumeAllJobs();
+            //TODO : When resume all jobs , update job props.
             return result;
         }
         /// <summary>

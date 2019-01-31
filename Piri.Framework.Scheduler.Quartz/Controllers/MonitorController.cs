@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Piri.Framework.Scheduler.Quartz.Domain;
 using Piri.Framework.Scheduler.Quartz.Interface;
 using Piri.Framework.Scheduler.Quartz.Interface.Result;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Piri.Framework.Scheduler.Quartz.Controllers
@@ -13,10 +12,12 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
     {
         private readonly IJobService _jobService;
         private readonly IScheduleJob _scheduleJob;
-        public MonitorController(IJobService jobService, IScheduleJob scheduleJob)
+        private readonly ILogger _logger;
+        public MonitorController(IJobService jobService, IScheduleJob scheduleJob,ILogger<MonitorController> logger)
         {
             _jobService = jobService;
             _scheduleJob = scheduleJob;
+            _logger = logger;
         }
         [HttpGet]
         [Route("/")]
@@ -29,7 +30,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
                 jobResult.Add(await _jobService.GetJobByName(item.JobKeyName));
 
             }
-
+            _logger.LogInformation("/ replied :", jobResult);
             return View(jobResult);
         }
     }

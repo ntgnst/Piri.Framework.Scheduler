@@ -10,6 +10,7 @@ using Piri.Framework.Scheduler.Quartz.Model;
 using Piri.Framework.Scheduler.Quartz.Service;
 using Quartz;
 using Swashbuckle.AspNetCore.Swagger;
+using System;
 using System.Configuration;
 
 namespace Piri.Framework.Scheduler.Quartz
@@ -51,7 +52,7 @@ namespace Piri.Framework.Scheduler.Quartz
             services.AddSingleton<IHttpHelper, HttpHelper>();
             services.AddTransient<IJobService, JobService>();
             services.AddTransient<IScheduleJob, QuartzService>();
-
+            services.AddLogging();
             services.UseQuartz(typeof(SimpleTestProcess));
             services.AddSwaggerGen(c =>
             {
@@ -65,6 +66,8 @@ Manages your scheduled jobs via API.Adds new job , pausing all , resuming all et
                 c.IncludeXmlComments($"{_environment.WebRootPath}\\Piri.Framework.Scheduler.Quartz.xml",true);
                 c.UseReferencedDefinitionsForEnums();
             });
+
+            Console.WriteLine("deneme");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

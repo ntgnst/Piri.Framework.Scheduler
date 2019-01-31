@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Piri.Framework.Scheduler.Quartz.Interface;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,11 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
         private string _responseBody;
         private HttpClient _client;
         private HttpResponseMessage _response;
+        private readonly ILogger _logger;
+        public HttpHelper(ILogger<HttpHelper> logger)
+        {
+            _logger = logger;
+        }
         public async Task<string> Get(string url, List<KeyValuePair<string, string>> headerList, string body)
         {
 
@@ -41,7 +47,7 @@ namespace Piri.Framework.Scheduler.Quartz.Helper
         }
         private async Task WriteResponse(string url,string responseBody)
         {
-            await Console.Out.WriteLineAsync($"Replied from --> {url} \n  Response --> {_responseBody}");
+            _logger.LogInformation($"Replied from --> {url} \n  Response --> {_responseBody}");
         }
         public async Task<string> NoBaseGet(string url, List<KeyValuePair<string, string>> headerList)
         {
