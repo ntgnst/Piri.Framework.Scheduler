@@ -78,11 +78,11 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
         [HttpGet]
         public async Task<List<Result<JobDto>>> Get()
         {
-            Result<List<QuartzDto>> result = await _scheduleJob.GetAllWorkingJobs();
+            Result<List<JobDto>> result = await _scheduleJob.GetAllWorkingJobs();
             List<Result<JobDto>> jobResult = new List<Result<JobDto>>();
             foreach (var item in result.Data)
             {
-                jobResult.Add(await _jobService.GetJobByName(item.JobKeyName));
+                jobResult.Add(await _jobService.GetJobByName(item.JobDataDtoList.FirstOrDefault().Name));
 
             }
             _logger.LogInformation("api/quartz/get replied :", jobResult);

@@ -90,5 +90,13 @@
             - 400 - No sub domain is found that matches the SubDomainName property
             - 200 - The scheduled Job Deleted </remarks>
         </member>
+        <member name="M:Piri.Framework.Scheduler.Quartz.EngineStarter.EngineStarter.#ctor(Piri.Framework.Scheduler.Quartz.Interface.IJobService,Piri.Framework.Scheduler.Quartz.Interface.IScheduleJob,Microsoft.Extensions.Logging.ILogger{Piri.Framework.Scheduler.Quartz.EngineStarter.EngineStarter})">
+            <summary>
+            Checks Engine status for unexpected faults. Starts jobs if they are unexpectedly stopped.
+            </summary>
+            <param name="jobService"></param>
+            <param name="scheduler"></param>
+            <param name="logger"></param>
+        </member>
     </members>
 </doc>

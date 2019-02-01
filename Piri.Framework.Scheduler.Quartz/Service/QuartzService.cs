@@ -28,31 +28,31 @@ namespace Piri.Framework.Scheduler.Quartz.Service
             _jobService = jobService;
             _logger = logger;
         }
-        public async Task<Result<QuartzDto>> StartJob<TJob>(JobDto jobDto, bool isStartNow = false) where TJob : IJob
-        {
-            Result<QuartzDto> result;
-            try
-            {
-                _scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
-                await _scheduler.Start();
+        //public async Task<Result<QuartzDto>> StartJob<TJob>(JobDto jobDto, bool isStartNow = false) where TJob : IJob
+        //{
+        //    Result<QuartzDto> result;
+        //    try
+        //    {
+        //        _scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
+        //        await _scheduler.Start();
 
-                _jobName = jobDto.JobDataDtoList.FirstOrDefault().Name;
+        //        _jobName = jobDto.JobDataDtoList.FirstOrDefault().Name;
 
-                _job = JobBuilder.Create<TJob>()
-                    .WithIdentity($"{_jobName}.{jobDto.Guid}")
-                    .Build();
-                _cronTrigger = GenerateCronTrigger(jobDto, isStartNow, _jobName);
-                _dateTimeOffset = await _scheduler.ScheduleJob(_job, _cronTrigger);
-                result = new Result<QuartzDto>(new QuartzDto() { Name = _jobName, Description = _job?.Description, JobKeyName = _job.Key.ToString(), IsActive = true, IsRunning = true, PreviousFireTime = _dateTimeOffset.LocalDateTime.ToString() });
-                _logger.LogInformation("StartJob worked.", result);
-            }
-            catch (Exception ex)
-            {
-                result = new Result<QuartzDto>(ResultTypeEnum.Error, null, $"An error occured while creating and starting job. Ex : {ex.ToString()}");
-                _logger.LogInformation("StartJob failed.", ex);
-            }
-            return result;
-        }
+        //        _job = JobBuilder.Create<TJob>()
+        //            .WithIdentity($"{_jobName}.{jobDto.Guid}")
+        //            .Build();
+        //        _cronTrigger = GenerateCronTrigger(jobDto, isStartNow, _jobName);
+        //        _dateTimeOffset = await _scheduler.ScheduleJob(_job, _cronTrigger);
+        //        result = new Result<QuartzDto>(new QuartzDto() { Name = _jobName, Description = _job?.Description, JobKeyName = _job.Key.ToString(), IsActive = true, IsRunning = true, PreviousFireTime = _dateTimeOffset.LocalDateTime.ToString() });
+        //        _logger.LogInformation("StartJob worked.", result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        result = new Result<QuartzDto>(ResultTypeEnum.Error, null, $"An error occured while creating and starting job. Ex : {ex.ToString()}");
+        //        _logger.LogInformation("StartJob failed.", ex);
+        //    }
+        //    return result;
+        //}
         private ICronTrigger GenerateCronTrigger(JobDto jobDto, bool isStartNow, string jobName)
         {
             if (isStartNow)
@@ -148,10 +148,11 @@ namespace Piri.Framework.Scheduler.Quartz.Service
 
             return result;
         }
-        public async Task<Result<List<QuartzDto>>> GetAllWorkingJobs()
+        public async Task<Result<List<JobDto>>> GetAllWorkingJobs()
         {
-            Result<List<QuartzDto>> result;
-            List<QuartzDto> modelList = new List<QuartzDto>();
+            Result<List<JobDto>> result;
+            List<JobDto> modelList = new List<JobDto>();
+            List<JobDataDto> jobDataDtoList = new List<JobDataDto>();
             try
             {
                 _scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
@@ -166,25 +167,33 @@ namespace Piri.Framework.Scheduler.Quartz.Service
                         IReadOnlyCollection<ITrigger> triggers = await _scheduler.GetTriggersOfJob(jobKey);
                         foreach (ITrigger trigger in triggers)
                         {
-
-                            modelList.Add(new QuartzDto()
+                            jobDataDtoList.Add(new JobDataDto()
                             {
-                                Group = jobGroup,
-                                JobKeyName = jobKey.Name,
-                                Description = detail.Description,
-                                Name = trigger.Key.Name,
-                                NextFireTime = trigger.GetNextFireTimeUtc().HasValue ? trigger.GetNextFireTimeUtc().Value.LocalDateTime.ToString() : "No Information",
-                                PreviousFireTime = trigger.GetPreviousFireTimeUtc().HasValue ? trigger.GetPreviousFireTimeUtc().Value.ToString() : "No Information"
+                                Name = jobKey.Name
+                            });
+                            modelList.Add(new JobDto()
+                            {
+                                JobDataDtoList = jobDataDtoList,
+                                LastRunTime = trigger.GetPreviousFireTimeUtc().HasValue ? trigger.GetPreviousFireTimeUtc().Value.LocalDateTime : default(DateTime?),
+                                IsActive = true,
+                                IsRunning = true,
+                                IsPaused = false
+                                //Group = jobGroup,
+                                //Na = jobKey.Name,
+                                //Description = detail.Description,
+                                //Name = trigger.Key.Name,
+                                //NextFireTime = trigger.GetNextFireTimeUtc().HasValue ? trigger.GetNextFireTimeUtc().Value.LocalDateTime.ToString() : "No Information",
+                                //PreviousFireTime = trigger.GetPreviousFireTimeUtc().HasValue ? trigger.GetPreviousFireTimeUtc().Value.ToString() : "No Information"
                             });
                         }
                     }
                 }
-                result = new Result<List<QuartzDto>>(modelList);
+                result = new Result<List<JobDto>>(modelList);
                 _logger.LogInformation("GetAllWorkingJobs worked.", result);
             }
             catch (Exception ex)
             {
-                result = new Result<List<QuartzDto>>(false, $"QuartzUtilizationService.GetAllWorkingJobs Method Ex : {ex.ToString()}");
+                result = new Result<List<JobDto>>(false, $"QuartzUtilizationService.GetAllWorkingJobs Method Ex : {ex.ToString()}");
                 _logger.LogError("GetAllWorkingJobs failed.", ex);
             }
 
