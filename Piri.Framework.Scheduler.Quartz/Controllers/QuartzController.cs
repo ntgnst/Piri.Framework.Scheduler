@@ -58,6 +58,7 @@ namespace Piri.Framework.Scheduler.Quartz.Controllers
             if (result.IsSuccess)
             {
                 jobDto.IsRunning = true;
+                result.Data.Guid = guid.ToString();
                 await _jobService.AddJob(jobDto);
             }
 

@@ -2,6 +2,7 @@
 {
     public class QuartzDto
     {
+        public string Guid { get; set; }
         public string Group { get; set; }
         public string JobKeyName { get; set; }
         public string JobKeyGroup { get; set; }
